@@ -1,0 +1,13 @@
+# Sandbox-Files
+*/cabal-sandbox/
+*/cabal.sandbox.config
+
+# Cabal-Files
+*/dist/
+
+# Windows-Files
+**/desktop.ini
+**/Thumbs.db
+
+# OSX files
+**/.DS_Store
