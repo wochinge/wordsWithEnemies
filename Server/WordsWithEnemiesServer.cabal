@@ -26,7 +26,7 @@ executable server
     main-is:                Main.hs
     build-depends:          
         base, 
-        rest-server-test, 
+        words-with-enemies-server, 
         snap, snap-core, snap-server, snap-loader-static, text
 
 library
