@@ -5,8 +5,8 @@ import System.Exit (exitSuccess)
 
 welcomeMessage :: String
 welcomeMessage = "Welcome to Words with Enemies\n\n \
-                 \Bitte wählen Sie aus einer der folgenden Optionen:\n\
-                 \[s]: Spiel starten \t [h]: Hilfe \t [q]: Beenden"
+                 \Please choose one of the following options:\n\
+                 \[s]: Start game \t [h]: Help \t [q]: Quit"
 
 startGame :: IO ()
 startGame = do 
@@ -20,11 +20,24 @@ handleOption :: String -> IO ()
 handleOption option
                 | option == "q" = exitSuccess
                 | option == "h" = help
-                | option == "s" = putStrLn "Spiel starten"
+                | option == "s" = enterName
                 | otherwise = startGame
-
                 
 help :: IO ()
 help = do 
-          putStrLn "Hilfe: "
+          putStrLn "Help: "
           startGame
+
+enterName :: IO ()
+enterName = do
+    hSetBuffering stdout NoBuffering
+    putStrLn "Please enter your nickname:"
+    nickname <- getLine
+    handleNickname nickname
+
+handleNickname :: String -> IO ()
+handleNickname name 
+    | null name = do
+        putStrLn "Sorry, this is not a valid nickname"
+        enterName
+    | otherwise = putStrLn "Aufn Server"
