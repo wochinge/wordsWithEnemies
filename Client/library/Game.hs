@@ -11,23 +11,22 @@ welcomeMessage = "Welcome to Words with Enemies\n\n \
 
 startGame :: IO ()
 startGame = do 
-        hSetBuffering stdout NoBuffering
-        putStrLn welcomeMessage
-        option <- getLine
-        handleOption (option)
-
+    hSetBuffering stdout NoBuffering
+    putStrLn welcomeMessage
+    option <- getLine
+    handleOption (option)
 
 handleOption :: String -> IO ()
 handleOption option
-                | option == "q" = exitSuccess
-                | option == "h" = help
-                | option == "s" = enterName
-                | otherwise = startGame
+    | option == "q" = exitSuccess
+    | option == "h" = help
+    | option == "s" = enterName
+    | otherwise = startGame
                 
 help :: IO ()
 help = do 
-          putStrLn "Help: "
-          startGame
+    putStrLn "Help: "
+    startGame
 
 enterName :: IO ()
 enterName = do
@@ -39,7 +38,7 @@ enterName = do
 handleNickname :: String -> IO ()
 handleNickname name 
     | null name = do
-        putStrLn "Sorry, this is not a valid nickname"
+        putStrLn "Sorry, this is not a valid nickname!"
         enterName
     | otherwise = do
         player <- createPlayer name
