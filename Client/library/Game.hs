@@ -2,6 +2,7 @@ module Game where
 
 import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
 import System.Exit (exitSuccess)
+import Network.PlayerClient
 
 welcomeMessage :: String
 welcomeMessage = "Welcome to Words with Enemies\n\n \
@@ -40,4 +41,7 @@ handleNickname name
     | null name = do
         putStrLn "Sorry, this is not a valid nickname"
         enterName
-    | otherwise = putStrLn "Aufn Server"
+    | otherwise = do
+        player <- createPlayer name
+        putStrLn "test"
+        --putStrLn $ show player
