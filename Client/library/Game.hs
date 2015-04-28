@@ -4,7 +4,9 @@ import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
 import System.Exit (exitSuccess)
 
 welcomeMessage :: String
-welcomeMessage = "Words with Enemies"
+welcomeMessage = "Welcome to Words with Enemies\n\n \
+                 \Bitte wählen Sie aus einer der folgenden Optionen:\n\
+                 \[s]: Spiel starten \t [h]: Hilfe \t [q]: Beenden"
 
 startGame :: IO ()
 startGame = do 
