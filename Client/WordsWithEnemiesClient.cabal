@@ -20,7 +20,10 @@ executable client
     
 library
     default-language:       Haskell2010
-    exposed-modules:        Game
+    exposed-modules:        Game, 
+                            Network.EasyNetwork, 
+                            Network.PlayerClient, 
+                            Types.Player
     hs-source-dirs:         library
     build-depends:      
         base, 

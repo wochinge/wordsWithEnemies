@@ -43,5 +43,4 @@ handleNickname name
         enterName
     | otherwise = do
         player <- createPlayer name
-        putStrLn "test"
-        --putStrLn $ show player
+        putStrLn $ show player
