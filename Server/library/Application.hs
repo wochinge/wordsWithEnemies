@@ -14,7 +14,7 @@ makeLenses ''App
 
 initApplication :: SnapletInit App App
 initApplication = makeSnaplet "wordsWithEnemies" "Web api for Words with Enemies" Nothing $ do
-    nest <- nestSnaplet "user" userSnaplet $ apiInit
-    return $ App nest
+    user <- nestSnaplet "user" userSnaplet $ apiInit
+    return $ App user
 
 
