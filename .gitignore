@@ -5,6 +5,9 @@
 # Cabal-Files
 */dist/
 
+# Snap-Files
+/Server/log
+
 # Windows-Files
 **/desktop.ini
 **/Thumbs.db
