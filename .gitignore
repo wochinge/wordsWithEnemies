@@ -8,6 +8,9 @@
 # Snap-Files
 /Server/log
 
+# Sqlite-Files
+/Server/*.db
+
 # Windows-Files
 **/desktop.ini
 **/Thumbs.db

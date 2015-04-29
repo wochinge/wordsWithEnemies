@@ -8,7 +8,7 @@ import qualified Data.ByteString.Char8 as B
 import           Data.Maybe
 import           Snap
 import           Snap.Snaplet.Heist
-import           Application
+import           Site
 
 main :: IO ()
 main = serveSnaplet defaultConfig initApplication

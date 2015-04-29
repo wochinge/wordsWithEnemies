@@ -1,20 +1,22 @@
-{-# LANGUAGE TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
--- | Snaplet auf oberster Ebene
 module Application where
 
 import Control.Lens
 import Snap.Snaplet
 import Snap
-import Api.UserApi
+import Api.PlayerApp
+import Snap.Snaplet.SqliteSimple
 
-data App = App {_userSnaplet :: Snaplet UserApp}
+
+data App = App {_userSnaplet :: Snaplet UserApp,
+                _db :: Snaplet Sqlite
+               }
 
 makeLenses ''App
 
-initApplication :: SnapletInit App App
-initApplication = makeSnaplet "wordsWithEnemies" "Web api for Words with Enemies" Nothing $ do
-    user <- nestSnaplet "user" userSnaplet $ apiInit
-    return $ App user
-
-
+instance HasSqlite (Handler b App) where
+    getSqliteState = with db get
