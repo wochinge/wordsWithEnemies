@@ -25,7 +25,12 @@ handleOption option
                 
 help :: IO ()
 help = do 
-    putStrLn "Help: "
+    putStrLn "Help: \n\
+    \5 Turns Each turn the two user are given random letters \n\
+    \The two user must submit a dictionary checked word derived from these letters \n\
+    \The words are compared. The winner of the duel is determined by whoever has the most left over letters.\n\
+    \1 point is awarded for each left over letter.\
+    \At the end of 5 turns who ever gets the most points wins the game."
     startGame
 
 enterName :: IO ()
