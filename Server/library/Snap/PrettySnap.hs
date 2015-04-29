@@ -17,7 +17,7 @@ setStatusCode code = modifyResponse . setResponseCode $ code
 --setJSONHeader = modifyResponse . setHeader "Content-Type" "application/json"
 
 -- | Sets the body a server response.
-setResponseBody :: (ToJSON a, MonadSnap m) 
+setBody :: (ToJSON a, MonadSnap m) 
                 => a -- ^ object which should be sent. Needs method toJSON to convert object to a JSON
                 -> m ()
-setResponseBody object = writeLBS . encode $ object
+setBody object = writeLBS . encode $ object

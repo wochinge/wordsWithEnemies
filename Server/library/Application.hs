@@ -6,13 +6,15 @@ module Application where
 import Control.Lens
 import Snap.Snaplet
 import Snap
+import Api.UserApi
 
-data App = App
+data App = App {_userSnaplet :: Snaplet UserApp}
 
---makeLenses ''App
+makeLenses ''App
 
+initApplication :: SnapletInit App App
 initApplication = makeSnaplet "wordsWithEnemies" "Web api for Words with Enemies" Nothing $ do
-    --nested <- nestSnaplet "test" testApi apiInit
-    return $ App
+    nest <- nestSnaplet "user" userSnaplet $ apiInit
+    return $ App nest
 
 
