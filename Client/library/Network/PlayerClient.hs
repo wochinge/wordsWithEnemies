@@ -6,5 +6,5 @@ import Network.EasyNetwork
 import Types.Player
 
 createPlayer :: String -> IO (Maybe Player)
-createPlayer name = post' "http://localhost:9000/user" player
+createPlayer name = post' "http://localhost:9000/player" player
 	where player = Player Nothing name
