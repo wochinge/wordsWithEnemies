@@ -1,4 +1,4 @@
 module Api.PlayerApp  where
 
-data UserApp = UserApp
+data PlayerApp = PlayerApp
 

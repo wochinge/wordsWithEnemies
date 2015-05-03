@@ -9,15 +9,9 @@ import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
 import qualified Data.Text as T
 import           Types.Player
+import           DB.Utils
 import           Application
 
-tableExists :: S.Connection -> String -> IO Bool
-tableExists con tableName = do
-    r <- S.query con "SELECT name FROM sqlite_master WHERE type='table' AND name=?" (Only tableName)
-    case r of
-         [Only (_ :: String)] -> return True
-         _ -> return False
-    
 createTables :: S.Connection -> IO ()
 createTables conn = do
   schemaCreated <- tableExists conn "player"

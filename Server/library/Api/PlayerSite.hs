@@ -17,21 +17,21 @@ import Api.PlayerApp
 import Data.Maybe (fromJust)
 import Application
 
-routes :: [(B.ByteString, Handler App UserApp())]
+routes :: [(B.ByteString, Handler App PlayerApp())]
 routes = [
             ("", method POST createPlayer)
          ]
          
-apiInit :: SnapletInit App UserApp
-apiInit = makeSnaplet "userApi" "handles users" Nothing $ do
+apiInit :: SnapletInit App PlayerApp
+apiInit = makeSnaplet "playerApi" "handles users" Nothing $ do
           addRoutes routes
-          return UserApp
+          return PlayerApp
          
-createPlayer :: Handler App UserApp ()
+createPlayer :: Handler App PlayerApp ()
 createPlayer = do
              body <- readRequestBody 2048
              setStatusCode 201
-             dBResult <- withTop db (savePlayer $ fromJust (user body))
+             dBResult <- withTop playerDb (savePlayer $ fromJust (decodeBody body))
              setBody $ head dBResult
              where
-                  user body = decode body :: Maybe Player
+                  decodeBody body = decode body :: Maybe Player
