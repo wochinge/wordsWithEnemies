@@ -13,6 +13,7 @@ import Snap.Util.FileServe
 import Snap.Snaplet.Auth
 import Snap.Snaplet.Auth.Backends.SqliteSimple
 import DB.PlayerDb
+import DB.Dictionary
 import Api.PlayerApp
 import Data.Maybe (fromJust)
 import Application
