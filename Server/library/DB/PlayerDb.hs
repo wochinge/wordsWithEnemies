@@ -21,10 +21,9 @@ createTables conn = do
        T.concat [ "CREATE TABLE player ("
                 , "player_id INTEGER PRIMARY KEY, "
                 , "nickname TEXT NOT NULL)"])
-
                 
-savePlayer :: Player -> Handler App Sqlite [Player]
+savePlayer :: Player -> Handler App Sqlite Player
 savePlayer (Player _ name) = do
      execute "INSERT INTO player (nickname) VALUES (?)" (Only (name))
      result <- query "SELECT * FROM player WHERE nickname = ? AND player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (name, name)
-     return result
+     return $ head result

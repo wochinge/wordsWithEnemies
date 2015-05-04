@@ -32,7 +32,5 @@ createPlayer :: Handler App PlayerApp ()
 createPlayer = do
              body <- readRequestBody 2048
              setStatusCode 201
-             dBResult <- withTop playerDb (savePlayer $ fromJust (decodeBody body))
-             setBody $ head dBResult
-             where
-                  decodeBody body = decode body :: Maybe Player
+             dBResult <- withTop playerDb (savePlayer $ decodeBody body)
+             setBody $ dBResult
