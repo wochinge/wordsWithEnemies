@@ -10,14 +10,14 @@ import Types.Score
 import Types.Round
 
 data Game = Game { gameId :: Maybe Integer -- ID kann auch leer sein
-                 , player :: Player
+                 , player :: [Player]
                  , status :: Boolean
-                 , totalScores :: [Score]
-                 , rounds :: [Round]
+                 , totalScores :: Maybe [Score]
+                 , rounds :: Maybe [Round]
                  } deriving (Show, Eq)
 
 
-instance FromRow Game where
-  fromRow = Game <$> field <*> field
+--instance FromRow Game where
+--  fromRow = Game <$> field <*> field <*> field <*> field
     
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Game)

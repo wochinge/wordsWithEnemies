@@ -7,7 +7,7 @@ import Database.SQLite.Simple
 import Control.Applicative
 import Types.Player
 
-data Score = Score { score :: Int
+data Score = Score { score :: Integer
                    , player :: Player 
                    } deriving (Show, Eq)
 
