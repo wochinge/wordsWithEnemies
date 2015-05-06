@@ -11,6 +11,7 @@ import qualified Data.Text as T
 import           Types.Player
 import           DB.Utils
 import           Application
+import           Data.Maybe
 
 createTables :: S.Connection -> IO ()
 createTables conn = do
@@ -34,15 +35,16 @@ savePlayer :: Player -> Handler App Sqlite Player
 savePlayer (Player _ name) = do
      execute "INSERT INTO player (nickname) VALUES (?)" (Only (name))
      result <- query "SELECT * FROM player WHERE nickname = ? AND player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (name, name)
-     --insertWaitingPlayer $ id result
-     return $ head result
+     let savedPlayer = head result
+     insertWaitingPlayer $ fromJust $ playerId savedPlayer
+     return savedPlayer
 
-getPlayer :: Int -> Handler App Sqlite Player
+getPlayer :: Integer -> Handler App Sqlite Player
 getPlayer id = do
      result <- query "SELECT * FROM player WHERE player_id = ?" (Only (id))
      return $ head result
 
-insertWaitingPlayer :: Int -> Handler App Sqlite ()
+insertWaitingPlayer :: Integer -> Handler App Sqlite ()
 insertWaitingPlayer player_id = 
      execute "INSERT INTO queue (waiting_player) VALUES (?)" (Only (player_id))
 

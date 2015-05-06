@@ -6,7 +6,7 @@ import Data.Aeson.TH
 import Database.SQLite.Simple
 import Control.Applicative
 
-data Player = Player { id :: Maybe Integer -- ID kann auch leer sein
+data Player = Player { playerId :: Maybe Integer -- ID kann auch leer sein
                      , name :: String
                      } deriving (Show, Eq)
 
