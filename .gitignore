@@ -10,6 +10,8 @@
 
 # Sqlite-Files
 /Server/*.db
+/Server/*.db-shm
+/Server/*.db-wal
 
 # Windows-Files
 **/desktop.ini
