@@ -1,13 +1,15 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+
 module Types.Game where
 
-import Data.Aeson
-import Data.Aeson.TH
-import Database.SQLite.Simple
-import Control.Applicative
-import Types.Player
-import Types.Score
-import Types.Round
+import 			 Data.Aeson
+import 			 Data.Aeson.TH
+import 			 Database.SQLite.Simple
+import 			 Control.Applicative
+import 			 Types.Player
+import 			 Types.Score
+import 			 Types.Round
 
 data Game = Game { gameId :: Maybe Integer -- ID kann auch leer sein
                  , player :: [Player]

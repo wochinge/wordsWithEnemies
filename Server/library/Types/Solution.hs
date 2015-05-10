@@ -1,11 +1,13 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+
 module Types.Solution where
 
-import Data.Aeson
-import Data.Aeson.TH
-import Database.SQLite.Simple
-import Control.Applicative
-import Types.Player
+import 			 Data.Aeson
+import 			 Data.Aeson.TH
+import 			 Database.SQLite.Simple
+import 			 Control.Applicative
+import 			 Types.Player
 
 data Solution = Solution { solution :: String
                          , player :: Player
@@ -13,6 +15,6 @@ data Solution = Solution { solution :: String
 
 
 instance FromRow Solution where
-  fromRow = Solution <$> field <*> field
+    fromRow = Solution <$> field <*> field
     
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Solution)

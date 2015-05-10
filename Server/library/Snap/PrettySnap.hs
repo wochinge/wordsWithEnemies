@@ -3,10 +3,10 @@
 -- | A module which offers more readable method calls.
 module Snap.PrettySnap where
 
-import Data.Aeson
-import Data.Maybe
-import Snap.Core
-import Snap.Snaplet
+import 			 Data.Aeson
+import 			 Data.Maybe
+import 			 Snap.Core
+import 			 Snap.Snaplet
 import qualified Data.ByteString.Lazy as B
 
 -- | Sets the status code of the server response.
@@ -22,8 +22,8 @@ setJSONHeader = modifyResponse header
     
 -- | Sets the body of a server response.
 setBody :: (ToJSON a, MonadSnap m) 
-                => a -- ^ object which should be sent. Needs method toJSON to convert object to a JSON
-                -> m ()
+        => a -- ^ object which should be sent. Needs method toJSON to convert object to a JSON
+        -> m ()
 setBody object = do
     setJSONHeader
     writeLBS . encode $ object

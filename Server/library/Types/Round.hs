@@ -1,12 +1,14 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+
 module Types.Round where
 
-import Data.Aeson
-import Data.Aeson.TH
-import Database.SQLite.Simple
-import Control.Applicative
-import Types.Score
-import Types.Solution
+import           Data.Aeson
+import           Data.Aeson.TH
+import           Database.SQLite.Simple
+import           Control.Applicative
+import           Types.Score
+import           Types.Solution
 
 data Round = Round { letters :: [Char]
                    , roundScore :: Score
@@ -15,6 +17,6 @@ data Round = Round { letters :: [Char]
 
 
 instance FromRow Round where
-  fromRow = Round <$> field <*> field
+    fromRow = Round <$> field <*> field
     
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Round)
