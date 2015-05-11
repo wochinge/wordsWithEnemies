@@ -8,8 +8,9 @@ import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
 import           Control.Monad.Trans (liftIO)
 import           Api.PlayerSite
-import qualified DB.PlayerDb as Db
+import qualified DB.PlayerDb as P_Db
 import qualified DB.Dictionary as Dict
+import qualified DB.GameDb as G_Db
 import           Control.Lens
 import           Control.Concurrent
 
@@ -18,8 +19,10 @@ initApplication = makeSnaplet "wordsWithEnemies" "Web api for Words with Enemies
     player <- nestSnaplet "player" playerSnaplet $ apiInit
     playerDb <- nestSnaplet "playerDb" playerDb sqliteInit
     dictionary <- nestSnaplet "dictionary" dictionary sqliteInit
+    gameDb <- nestSnaplet "gameDb" gameDb sqliteInit
     
     let c = sqliteConn $ playerDb ^# snapletValue
-    liftIO $ withMVar c $ \conn -> Db.createTables conn
+    liftIO $ withMVar c $ \conn -> P_Db.createTables conn
     liftIO $ withMVar c $ \conn -> Dict.createTables conn
-    return $ App player playerDb dictionary
+    liftIO $ withMVar c $ \conn -> G_Db.createTables conn
+    return $ App player playerDb dictionary gameDb

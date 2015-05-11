@@ -38,7 +38,7 @@ library
                             Api.PlayerApp, Api.PlayerSite, 
                             Snap.PrettySnap, 
                             Types.Player, 
-                            DB.PlayerDb, DB.Utils, DB.Dictionary
+                            DB.PlayerDb, DB.Utils, DB.Dictionary, DB.GameDb
     build-depends:
         base,
         monads-tf,

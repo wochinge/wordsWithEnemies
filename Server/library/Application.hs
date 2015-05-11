@@ -13,6 +13,7 @@ import           Snap.Snaplet.SqliteSimple
 data App = App { _playerSnaplet :: Snaplet PlayerApp
                , _playerDb :: Snaplet Sqlite
                , _dictionary :: Snaplet Sqlite
+               , _gameDb :: Snaplet Sqlite
                }
 
 makeLenses ''App
