@@ -18,13 +18,12 @@ createTables :: S.Connection -- ^ database connection
              -> IO ()        -- ^ nothing
 createTables conn = do
     S.execute_ conn "BEGIN"
-    
-    createTable conn "dictionary" $
-         T.concat [ "CREATE TABLE dictionary ("
-                  , "word_id INTEGER PRIMARY KEY, "
-                  , "word TEXT NOT NULL)"
-                  ]
     schemaCreated <- tableExists conn "dictionary"
+    createTable conn "dictionary" $
+        T.concat [ "CREATE TABLE dictionary ("
+                 , "word_id INTEGER PRIMARY KEY, "
+                 , "word TEXT NOT NULL)"
+                 ]
     unless schemaCreated $ do
       words <- readWords
       mapM_ (insertWord conn) $ filteredWords words

@@ -17,16 +17,16 @@ import           Data.Maybe
 createTables :: S.Connection -> IO ()
 createTables conn = do
     createTable conn "player" $
-         T.concat [ "CREATE TABLE player ("
-                  , "player_id INTEGER PRIMARY KEY, "
-                  , "nickname TEXT NOT NULL)"
-                  ]
+        T.concat [ "CREATE TABLE player ("
+                 , "player_id INTEGER PRIMARY KEY, "
+                 , "nickname TEXT NOT NULL)"
+                 ]
     createTable conn "queue" $
-         T.concat [ "CREATE TABLE queue ("
-                  , "id INTEGER PRIMARY KEY, "
-                  , "waiting_player INTEGER, "
-                  , "FOREIGN KEY(waiting_player) REFERENCES player(player_id))"
-                  ]
+        T.concat [ "CREATE TABLE queue ("
+                 , "id INTEGER PRIMARY KEY, "
+                 , "waiting_player INTEGER, "
+                 , "FOREIGN KEY(waiting_player) REFERENCES player(player_id))"
+                 ]
            
 savePlayer :: Player -> Handler App Sqlite Player
 savePlayer (Player _ name) = do

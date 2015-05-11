@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DB.GameDb (createTables, wordExists, getRandomWord) where
+module DB.GameDb (createTables) where
 
 import           Control.Applicative
 import           Control.Monad
@@ -18,38 +18,39 @@ createTables :: S.Connection -- ^ database connection
              -> IO ()        -- ^ nothing
 createTables conn = do
     createTable conn "game" $
-         T.concat [ "CREATE TABLE game ("
-                  , "game_id INTEGER PRIMARY KEY, "
-                  , "player1_id INTEGER, "
-                  , "player2_id INTEGER, "
-                  , "status BOOLEAN, "
-                  , "FOREIGN KEY(player1_id) REFERENCES player(player_id), "
-                  , "FOREIGN KEY(player2_id) REFERENCES player(player_id))"
-                  ]
+        T.concat [ "CREATE TABLE game ("
+                 , "game_id INTEGER PRIMARY KEY, "
+                 , "player1_id INTEGER, "
+                 , "player2_id INTEGER, "
+                 , "status BOOLEAN, "
+                 , "FOREIGN KEY(player1_id) REFERENCES player(player_id), "
+                 , "FOREIGN KEY(player2_id) REFERENCES player(player_id))"
+                 ]
                 
     createTable conn "totalscore" $
-         T.concat [ "CREATE TABLE totalscore ("
-                  , "score_id INTEGER PRIMARY KEY, "
-                  , "score INTEGER, "
-                  , "player_id INTEGER NOT NULL, "
-                  , "FOREIGN KEY(player_id) REFERENCES player(player_id))"
-                  ]
+        T.concat [ "CREATE TABLE totalscore ("
+                 , "score_id INTEGER PRIMARY KEY, "
+                 , "score INTEGER, "
+                 , "player_id INTEGER NOT NULL, "
+                 , "FOREIGN KEY(player_id) REFERENCES player(player_id))"
+                 ]
   
     createTable conn "solution" $
-         T.concat [ "CREATE TABLE solution ("
-                  , "solution TEXT, "
-                  , "solution_id INTEGER PRIMARY KEY, "
-                  , "player_id INTEGER NOT NULL, "
-                  , "round_id INTEGER NOT NULL, "
-                  , "FOREIGN KEY(round_id) REFERENCES round(round_id), "
-                  , "FOREIGN KEY(player_id) REFERENCES player(player_id))"
-                ]
-                
+        T.concat [ "CREATE TABLE solution ("
+                 , "solution TEXT, "
+                 , "solution_id INTEGER PRIMARY KEY, "
+                 , "player_id INTEGER NOT NULL, "
+                 , "round_id INTEGER NOT NULL, "
+                 , "FOREIGN KEY(round_id) REFERENCES round(round_id), "
+                 , "FOREIGN KEY(player_id) REFERENCES player(player_id))"
+                 ]
+    -- INSERT INTO Log (id, rev_no, description
+    -- VALUES ((SELECT IFNULL(MAX(id), 0) + 1 FROM Log), 'rev_Id', 'some description')          
     createTable conn "round" $
-         T.concat [ "CREATE TABLE round ("
-                  , "round_id INTEGER PRIMARY KEY, "
-                  , "round_nr INTEGER AUTOINCREMENT, "
-                  , "game_id INTEGER NOT NULL, "
-                  , "letters TEXT NOT NULL, "
-                  , "FOREIGN KEY(game_id) REFERENCES game(game_id))"
-                  ]
+        T.concat [ "CREATE TABLE round ("
+                 , "round_id INTEGER PRIMARY KEY, "
+                 , "round_nr INTEGER, "
+                 , "game_id INTEGER NOT NULL, "
+                 , "letters TEXT NOT NULL, "
+                 , "FOREIGN KEY(game_id) REFERENCES game(game_id))"
+                 ]
