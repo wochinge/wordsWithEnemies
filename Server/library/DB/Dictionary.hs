@@ -18,18 +18,18 @@ createTables :: S.Connection -- ^ database connection
              -> IO ()        -- ^ nothing
 createTables conn = do
     S.execute_ conn "BEGIN"
-    schemaCreated <- tableExists conn "dictionary"
-    unless schemaCreated $
-      S.execute_ conn
-        (S.Query $
+    
+    createTable conn "dictionary" $
          T.concat [ "CREATE TABLE dictionary ("
                   , "word_id INTEGER PRIMARY KEY, "
                   , "word TEXT NOT NULL)"
-                  ])
+                  ]
+    schemaCreated <- tableExists conn "dictionary"
     unless schemaCreated $ do
       words <- readWords
       mapM_ (insertWord conn) $ filteredWords words
-      S.execute_ conn "COMMIT"
+    
+    S.execute_ conn "COMMIT"
 
 -- | Reads the words from a text file.
 readWords :: IO [String] -- ^ list of words (words are lowercase, for a later not case sensitive use)

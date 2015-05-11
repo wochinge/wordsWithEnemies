@@ -6,8 +6,8 @@ module DB.PlayerDb where
 import           Control.Applicative
 import           Control.Monad
 import qualified Database.SQLite.Simple as S
-import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
+import           Snap.Snaplet
 import qualified Data.Text as T
 import           Types.Player
 import           DB.Utils
@@ -16,23 +16,17 @@ import           Data.Maybe
 
 createTables :: S.Connection -> IO ()
 createTables conn = do
-    tablePlayerCreated <- tableExists conn "player"
-    unless tablePlayerCreated $
-      S.execute_ conn
-        (S.Query $
+    createTable conn "player" $
          T.concat [ "CREATE TABLE player ("
                   , "player_id INTEGER PRIMARY KEY, "
                   , "nickname TEXT NOT NULL)"
-                  ])
-    tableQueueCreated <- tableExists conn "queue"
-    unless tableQueueCreated $
-      S.execute_ conn
-        (S.Query $
+                  ]
+    createTable conn "queue" $
          T.concat [ "CREATE TABLE queue ("
                   , "id INTEGER PRIMARY KEY, "
                   , "waiting_player INTEGER, "
                   , "FOREIGN KEY(waiting_player) REFERENCES player(player_id))"
-                  ])
+                  ]
            
 savePlayer :: Player -> Handler App Sqlite Player
 savePlayer (Player _ name) = do
