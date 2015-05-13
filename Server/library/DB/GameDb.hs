@@ -17,7 +17,7 @@ import           DBAccess.SolutionDAO
 import qualified DBAccess.ScoreDAO as ScoreDAO
 import qualified DBAccess.RoundDAO as RoundDAO
 import qualified Types.Solution as S
-import           Types.Score
+import qualified Types.Score as Sc
 import           Types.Round
 import           Types.Game
 import qualified Types.Player as P
@@ -87,7 +87,7 @@ insertSolution roundId newSolution = do
     let values = (S.solution newSolution, P.playerId $ S.player newSolution, roundId)
     execute "INSERT INTO solution (solution, player_id, round_id) VALUES (?)" values
 
-getScore :: Integer -> Handler App Sqlite (Maybe Score)
+getScore :: Integer -> Handler App Sqlite (Maybe Sc.Score)
 getScore roundId = do
     results <- query "SELECT * FROM score WHERE round_id = ? LIMIT 1" (Only (roundId))
     let score = head results
@@ -96,6 +96,11 @@ getScore roundId = do
             player <- PlayerDb.getPlayer $ ScoreDAO.winnerid score
             return $ Just $ ScoreDAO.getScore score player
         else return Nothing
+
+insertScore :: Integer -> Sc.Score -> Handler App Sqlite ()
+insertScore roundId newScore = do
+    let values = (roundId, P.playerId $ Sc.player newScore, Sc.score newScore)
+    execute "INSERT INTO roundscore (round_id, winner, score) VALUES (?)" values
 
 getRounds :: Integer -> Handler App Sqlite [Round]
 getRounds gameId = do
