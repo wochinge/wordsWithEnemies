@@ -26,13 +26,25 @@ createTables conn = do
                  , "FOREIGN KEY(player1_id) REFERENCES player(player_id), "
                  , "FOREIGN KEY(player2_id) REFERENCES player(player_id))"
                  ]
-                
+    
+    createTable conn "roundscore" $
+        T.concat [ "CREATE TABLE roundscore ("
+                 , "score_id INTEGER PRIMARY KEY, "
+                 , "round_id INTEGER, "
+                 , "winner INTEGER, "
+                 , "score INTEGER, "
+                 , "FOREIGN KEY(winner) REFERENCES player(player_id), "
+                 , "FOREIGN KEY(round_id) REFERENCES round(round_id))"
+                 ]
+
     createTable conn "totalscore" $
         T.concat [ "CREATE TABLE totalscore ("
                  , "score_id INTEGER PRIMARY KEY, "
+                 , "game_id INTEGER"
                  , "score INTEGER, "
                  , "player_id INTEGER NOT NULL, "
-                 , "FOREIGN KEY(player_id) REFERENCES player(player_id))"
+                 , "FOREIGN KEY(player_id) REFERENCES player(player_id), "
+                 , "FOREIGN KEY(game_id) REFERENCES game(game_id))"
                  ]
   
     createTable conn "solution" $
