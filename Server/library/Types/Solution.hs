@@ -12,9 +12,5 @@ import 			 Types.Player
 data Solution = Solution { solution :: String
                          , player :: Player
                          } deriving (Show, Eq)
-
-
-instance FromRow Solution where
-    fromRow = Solution <$> field <*> field
     
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Solution)

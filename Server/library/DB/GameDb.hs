@@ -12,6 +12,11 @@ import qualified Data.Text as T
 import           Application
 import           DB.Utils
 import qualified Data.List as L
+import qualified DB.PlayerDb as PlayerDb
+import           DBAccess.SolutionDAO
+import qualified DBAccess.ScoreDAO as ScoreDAO
+import           Types.Solution
+import           Types.Score
 
 -- | Creates the Game table.
 createTables :: S.Connection -- ^ database connection
@@ -49,8 +54,8 @@ createTables conn = do
   
     createTable conn "solution" $
         T.concat [ "CREATE TABLE solution ("
-                 , "solution TEXT, "
                  , "solution_id INTEGER PRIMARY KEY, "
+                 , "solution TEXT ," 
                  , "player_id INTEGER NOT NULL, "
                  , "round_id INTEGER NOT NULL, "
                  , "FOREIGN KEY(round_id) REFERENCES round(round_id), "
@@ -66,3 +71,21 @@ createTables conn = do
                  , "letters TEXT NOT NULL, "
                  , "FOREIGN KEY(game_id) REFERENCES game(game_id))"
                  ]
+
+getSolutions :: Integer -> Handler App Sqlite [Solution]
+getSolutions roundId = do
+    results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only (roundId))
+    mapM buildSolution results
+
+buildSolution :: SolutionDAO -> Handler App Sqlite Solution
+buildSolution dao = do
+    player <- PlayerDb.getPlayer $ playerOfSolution dao
+    return $ getSolution dao player
+
+getScore :: Integer -> Handler App Sqlite Score
+getScore roundId = do
+    results <- query "SELECT * FROM score WHERE round_id = ? LIMIT 1" (Only (roundId))
+    let score = head results
+    player <- PlayerDb.getPlayer $ ScoreDAO.winnerid score
+    return $ ScoreDAO.getScore score player
+
