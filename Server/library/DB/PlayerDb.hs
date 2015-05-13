@@ -31,7 +31,7 @@ createTables conn = do
 savePlayer :: Player -> Handler App Sqlite Player
 savePlayer (Player _ name) = do
     execute "INSERT INTO player (nickname) VALUES (?)" (Only (name))
-    result <- query "SELECT * FROM player WHERE nickname = ? AND player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (name, name)
+    result <- query "SELECT * FROM player WHERE player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (Only (name))
     let savedPlayer = head result
     insertWaitingPlayer $ fromJust $ playerId savedPlayer
     return savedPlayer

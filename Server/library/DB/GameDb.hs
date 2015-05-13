@@ -5,7 +5,7 @@ module DB.GameDb (createTables) where
 
 import           Control.Applicative
 import           Control.Monad
-import qualified Database.SQLite.Simple as S
+import qualified Database.SQLite.Simple as SQL
 import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
 import qualified Data.Text as T
@@ -16,13 +16,14 @@ import qualified DB.PlayerDb as PlayerDb
 import           DBAccess.SolutionDAO
 import qualified DBAccess.ScoreDAO as ScoreDAO
 import qualified DBAccess.RoundDAO as RoundDAO
-import           Types.Solution
+import qualified Types.Solution as S
 import           Types.Score
 import           Types.Round
 import           Types.Game
+import qualified Types.Player as P
 
 -- | Creates the Game table.
-createTables :: S.Connection -- ^ database connection
+createTables :: SQL.Connection -- ^ database connection
              -> IO ()        -- ^ nothing
 createTables conn = do
     createTable conn "game" $
@@ -75,11 +76,16 @@ createTables conn = do
                  , "FOREIGN KEY(game_id) REFERENCES game(game_id))"
                  ]
 
-getSolutions :: Integer -> Handler App Sqlite [Solution]
+getSolutions :: Integer -> Handler App Sqlite [S.Solution]
 getSolutions roundId = do
     results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only (roundId))
     player <- mapM (\dao -> PlayerDb.getPlayer $ playerOfSolution dao) results
     return $ zipWith getSolution results player
+
+insertSolution :: Integer -> S.Solution -> Handler App Sqlite ()
+insertSolution roundId newSolution = do
+    let values = (S.solution newSolution, P.playerId $ S.player newSolution, roundId)
+    execute "INSERT INTO solution (solution, player_id, round_id) VALUES (?)" values
 
 getScore :: Integer -> Handler App Sqlite (Maybe Score)
 getScore roundId = do
