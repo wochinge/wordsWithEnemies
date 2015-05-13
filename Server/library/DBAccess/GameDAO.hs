@@ -7,6 +7,8 @@ import 			 Database.SQLite.Simple
 import 			 Control.Applicative
 import           Types.Game
 import           Types.Score
+import           Types.Round
+import           Types.Player
 
 data GameDAO = GameDAO { gameid    :: Integer
                        , player1id :: Integer
@@ -17,5 +19,5 @@ data GameDAO = GameDAO { gameid    :: Integer
 instance FromRow GameDAO where
   fromRow = GameDAO <$> field <*> field <*> field <*> field
   
-getScore :: GameDAO -> [Player] -> [Sore] -> [Round] -> Game
-getScore game players scores rounds = Game $ gameid game $ players $ status game
+getScore :: GameDAO -> [Player] -> [Score] -> [Round] -> Game
+getScore game players scores rounds = Game (gameid game) players (status game) rounds

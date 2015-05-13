@@ -10,8 +10,10 @@ import           Control.Applicative
 import           Types.Score
 import           Types.Solution
 
-data Round = Round { letters :: [Char]
-                   , roundScore :: Score
+data Round = Round { roundId :: Maybe Integer
+                   , roundNr :: Maybe Integer
+                   , letters :: [Char]
+                   , roundScore :: Maybe Score
                    , solutions :: [Solution]
                    } deriving (Show, Eq)
     

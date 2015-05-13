@@ -85,12 +85,15 @@ buildSolution dao = do
     player <- PlayerDb.getPlayer $ playerOfSolution dao
     return $ getSolution dao player
 
-getScore :: Integer -> Handler App Sqlite Score
+getScore :: Integer -> Handler App Sqlite (Maybe Score)
 getScore roundId = do
     results <- query "SELECT * FROM score WHERE round_id = ? LIMIT 1" (Only (roundId))
     let score = head results
-    player <- PlayerDb.getPlayer $ ScoreDAO.winnerid score
-    return $ ScoreDAO.getScore score player
+    if null results
+        then do
+            player <- PlayerDb.getPlayer $ ScoreDAO.winnerid score
+            return $ Just $ ScoreDAO.getScore score player
+        else return Nothing
 
 getRounds :: Integer -> Handler App Sqlite [Round]
 getRounds gameId = do

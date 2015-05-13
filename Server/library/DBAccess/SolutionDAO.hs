@@ -6,7 +6,7 @@ module DBAccess.SolutionDAO where
 import 			 Database.SQLite.Simple
 import 			 Control.Applicative
 import           Types.Player
-import           Types.Solution
+import qualified Types.Solution as S
 
 data SolutionDAO = SolutionDAO { solutionId :: Integer
                                , solutionText :: String
@@ -17,5 +17,5 @@ data SolutionDAO = SolutionDAO { solutionId :: Integer
 instance FromRow SolutionDAO where
   fromRow = SolutionDAO <$> field <*> field <*> field <*> field
   
-getSolution :: SolutionDAO -> Player -> Solution
-getSolution solution player = Solution (solutionText solution) player
+getSolution :: SolutionDAO -> Player -> S.Solution
+getSolution solution player = S.Solution (Just $ solutionId solution) (solutionText solution) player

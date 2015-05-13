@@ -9,7 +9,8 @@ import 			 Database.SQLite.Simple
 import 			 Control.Applicative
 import 			 Types.Player
 
-data Solution = Solution { solution :: String
+data Solution = Solution { solutionId :: Maybe Integer
+                         , solution :: String
                          , player :: Player
                          } deriving (Show, Eq)
     

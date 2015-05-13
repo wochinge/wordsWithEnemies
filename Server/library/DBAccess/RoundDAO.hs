@@ -18,5 +18,5 @@ data RoundDAO = RoundDAO { roundid :: Integer
 instance FromRow RoundDAO where
   fromRow = RoundDAO <$> field <*> field <*> field <*> field
   
-getRound :: RoundDAO -> Score -> [Solution] -> R.Round
-getRound dao winnerScore solutions = R.Round (letters dao) winnerScore solutions
+getRound :: RoundDAO -> Maybe Score -> [Solution] -> R.Round
+getRound dao winnerScore solutions = R.Round (Just $ roundid dao) (Just $ roundnr dao) (letters dao) winnerScore solutions

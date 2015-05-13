@@ -18,4 +18,4 @@ instance FromRow ScoreDAO where
   fromRow = ScoreDAO <$> field <*> field <*> field <*> field
   
 getScore :: ScoreDAO -> Player -> Score
-getScore score player = Score (roundScore score) player
+getScore score player = Score (Just $ scoreid score) (roundScore score) player
