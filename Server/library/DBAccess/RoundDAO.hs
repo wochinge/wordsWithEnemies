@@ -5,17 +5,18 @@ module DBAccess.RoundDAO where
 
 import 			 Database.SQLite.Simple
 import 			 Control.Applicative
-import           Types.Player
 import           Types.Score
+import           Types.Round
+import           Types.Solution
 
-data ScoreDAO = ScoreDAO { scoreid :: Integer
-                         , roundid :: Integer
-                         , winnerid :: Integer
-                         , roundScore :: Integer
+data RoundDAO = RoundDAO { roundid :: Integer
+                         , roundnr :: Integer
+                         , gameid  :: Integer
+                         , letters :: String
                          }
 
-instance FromRow ScoreDAO where
-  fromRow = ScoreDAO <$> field <*> field <*> field <*> field
+instance FromRow RoundDAO where
+  fromRow = RoundDAO <$> field <*> field <*> field <*> field
   
-getScore :: ScoreDAO -> Player -> Score
-getScore score player = Score $ roundScore score $ player
+getRound :: RoundDAO -> Score -> [Solution] -> Round
+getRound round winnerScore solutions = Round $ letters round $ winnerScore $ solutions
