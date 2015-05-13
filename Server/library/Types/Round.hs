@@ -13,10 +13,6 @@ import           Types.Solution
 data Round = Round { letters :: [Char]
                    , roundScore :: Score
                    , solutions :: [Solution]
-                   } deriving (Show)
-
-
-instance FromRow Round where
-    fromRow = Round <$> field <*> field
+                   } deriving (Show, Eq)
     
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Round)

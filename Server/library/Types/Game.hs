@@ -13,13 +13,9 @@ import 			 Types.Round
 
 data Game = Game { gameId :: Maybe Integer -- ID kann auch leer sein
                  , player :: [Player]
-                 , status :: Boolean
+                 , status :: Bool
                  , totalScores :: Maybe [Score]
                  , rounds :: Maybe [Round]
                  } deriving (Show, Eq)
-
-
---instance FromRow Game where
---  fromRow = Game <$> field <*> field <*> field <*> field
     
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Game)

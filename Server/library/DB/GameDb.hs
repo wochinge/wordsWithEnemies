@@ -15,8 +15,11 @@ import qualified Data.List as L
 import qualified DB.PlayerDb as PlayerDb
 import           DBAccess.SolutionDAO
 import qualified DBAccess.ScoreDAO as ScoreDAO
+import qualified DBAccess.RoundDAO as RoundDAO
 import           Types.Solution
 import           Types.Score
+import           Types.Round
+import           Types.Game
 
 -- | Creates the Game table.
 createTables :: S.Connection -- ^ database connection
@@ -89,3 +92,13 @@ getScore roundId = do
     player <- PlayerDb.getPlayer $ ScoreDAO.winnerid score
     return $ ScoreDAO.getScore score player
 
+getRounds :: Integer -> Handler App Sqlite [Round]
+getRounds gameId = do
+    results <- query "SELECT * FROM round WHERE game_id = ?" (Only (gameId))
+    mapM buildRound results
+
+buildRound :: RoundDAO.RoundDAO -> Handler App Sqlite Round
+buildRound dao = do
+    score <- getScore $ RoundDAO.roundid dao
+    solutions <- getSolutions $ RoundDAO.roundid dao
+    return $ RoundDAO.getRound dao score solutions
