@@ -78,12 +78,8 @@ createTables conn = do
 getSolutions :: Integer -> Handler App Sqlite [Solution]
 getSolutions roundId = do
     results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only (roundId))
-    mapM buildSolution results
-
-buildSolution :: SolutionDAO -> Handler App Sqlite Solution
-buildSolution dao = do
-    player <- PlayerDb.getPlayer $ playerOfSolution dao
-    return $ getSolution dao player
+    player <- mapM (\dao -> PlayerDb.getPlayer $ playerOfSolution dao) results
+    return $ zipWith getSolution results player
 
 getScore :: Integer -> Handler App Sqlite (Maybe Score)
 getScore roundId = do
