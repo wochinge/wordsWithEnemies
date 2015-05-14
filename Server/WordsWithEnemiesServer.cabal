@@ -37,8 +37,10 @@ library
     exposed-modules:        Application, Site
                             Api.PlayerApp, Api.PlayerSite, 
                             Snap.PrettySnap, 
-                            Types.Player, 
-                            DB.PlayerDb, DB.Utils, DB.Dictionary, DB.GameDb
+                            Types.Player, Types.Game, Types.Round, Types.Score, Types.Solution,
+                            DB.PlayerDb, DB.Utils, DB.Dictionary, DB.GameDb,
+                            DB.SolutionDb, DB.ScoreDb, DB.RoundDb,
+                            DBAccess.GameDAO, DBAccess.RoundDAO, DBAccess.SolutionDAO, DBAccess.ScoreDAO
     build-depends:
         base,
         monads-tf,

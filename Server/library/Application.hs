@@ -14,6 +14,9 @@ data App = App { _playerSnaplet :: Snaplet PlayerApp
                , _playerDb :: Snaplet Sqlite
                , _dictionary :: Snaplet Sqlite
                , _gameDb :: Snaplet Sqlite
+               , _roundDb :: Snaplet Sqlite
+               , _scoreDb :: Snaplet Sqlite
+               , _solutionDb :: Snaplet Sqlite
                }
 
 makeLenses ''App
