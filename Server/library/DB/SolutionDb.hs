@@ -5,7 +5,7 @@ module DB.SolutionDb where
 
 import qualified Database.SQLite.Simple as SQL
 import           DBAccess.SolutionDAO
-import qualified Types.Solution as S
+import           Types.Solution
 import qualified Types.Player as P
 import qualified DB.PlayerDb as PlayerDb
 import           Snap.Snaplet.SqliteSimple
@@ -27,13 +27,13 @@ createTables conn = do
                  , "FOREIGN KEY(player_id) REFERENCES player(player_id))"
                  ]
                  
-getSolutions :: Integer -> Handler App Sqlite [S.Solution]
+getSolutions :: Integer -> Handler App Sqlite [Solution]
 getSolutions roundId = do
     results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only (roundId))
     player <- mapM (\dao -> PlayerDb.getPlayer $ playerOfSolution dao) results
     return $ zipWith getSolution results player
 
-insertSolution :: Integer -> S.Solution -> Handler App Sqlite ()
+insertSolution :: Integer -> Solution -> Handler App Sqlite ()
 insertSolution roundId newSolution = do
-    let values = (S.solution newSolution, P.playerId $ S.player newSolution, roundId)
+    let values = (solution newSolution, P.playerId $ player newSolution, roundId)
     execute "INSERT INTO solution (solution, player_id, round_id) VALUES (?)" values
