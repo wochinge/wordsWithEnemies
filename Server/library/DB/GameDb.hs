@@ -20,7 +20,9 @@ import qualified Types.Solution as S
 import qualified Types.Score as Sc
 import           Types.Round
 import           Types.Game
+import qualified DBAccess.GameDAO as GameDAO
 import qualified Types.Player as P
+import           Data.Maybe
 
 -- | Creates the Game table.
 createTables :: SQL.Connection -- ^ database connection
@@ -100,7 +102,7 @@ getScore roundId = do
 insertScore :: Integer -> Sc.Score -> Handler App Sqlite ()
 insertScore roundId newScore = do
     let values = (roundId, P.playerId $ Sc.player newScore, Sc.score newScore)
-    execute "INSERT INTO roundscore (round_id, winner, score) VALUES (?)" values
+    execute "INSERT INTO roundscore (round_id, winner, score) VALUES (?, ?, ?)" values
 
 getRounds :: Integer -> Handler App Sqlite [Round]
 getRounds gameId = do
@@ -112,3 +114,22 @@ buildRound dao = do
     score <- getScore $ RoundDAO.roundid dao
     solutions <- getSolutions $ RoundDAO.roundid dao
     return $ RoundDAO.getRound dao score solutions
+
+insertRound :: Integer -> Round -> Handler App Sqlite ()
+insertRound gameId newRound = do
+    let values = (gameId, gameId, letters newRound)
+    execute "INSERT INTO round (round_nr, game_id, letters) VALUES ((SELECT IFNULL(MAX(round_r), 0) + 1 FROM round WHERE game_id = ?), ?, ?)" values
+    inserted <- query "SELECT * FROM round WHERE round_nr = (SELECT MAX(round_r) FROM round where game_id = ?)" (Only (gameId))
+    let roundId = roundid $ head inserted
+    mapM_ (\s -> insertSolution roundId s) $ solutions newRound
+    let score = roundScore newRound
+    when (isJust score) $ insertScore roundId (fromJust score)
+    
+insertGame :: Game -> Handler App Sqlite Game
+insertGame game = do
+    let values = (P.playerId $ head $ player game, P.playerId $ last $ player game, status game)
+    execute "INSERT INTO game (player1_id, player2_id, status) VALUES (?, ?, ?)" values
+    inserted <- query_ "SELECT * FROM round WHERE game_id = MAX(game_id)"
+    let id = GameDAO.gameid $ head inserted
+    mapM_ (insertRound id) $ rounds game
+    return $ game { gameId = Just id }

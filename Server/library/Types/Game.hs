@@ -14,7 +14,7 @@ import 			 Types.Round
 data Game = Game { gameId :: Maybe Integer -- ID kann auch leer sein
                  , player :: [Player]
                  , status :: Bool
-                 , rounds :: Maybe [Round]
+                 , rounds :: [Round]
                  } deriving (Show, Eq)
     
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Game)
