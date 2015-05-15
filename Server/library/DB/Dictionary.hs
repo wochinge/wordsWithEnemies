@@ -35,7 +35,7 @@ createTables conn = do
 readWords :: IO [String] -- ^ list of words (words are lowercase, for a later not case sensitive use)
 readWords = do
     words <- B.readFile "wordlist.txt"
-    let wordList = lines $ B.unpack words
+    let wordList = map B.unpack $ B.lines $ words
     return $ map (T.unpack . T.toLower . T.pack) wordList
 
 -- | Filters the words, because word version with "'" are not wanted.
