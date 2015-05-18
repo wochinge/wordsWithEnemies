@@ -2,22 +2,38 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module for database operations for solution objects.
-module DB.SolutionDb 
+module DB.SolutionDAO
 ( createTables
 , getSolutions
 , insertSolution
 ) where
 
 import qualified Database.SQLite.Simple as SQL
-import           DBAccess.SolutionDAO
-import           Types.Solution
 import qualified Types.Player as P
-import qualified DB.PlayerDb as PlayerDb
+import qualified DB.PlayerDAO as PlayerDb
 import           Snap.Snaplet.SqliteSimple
 import           Snap.Snaplet
 import           Application
 import qualified Data.Text as T
 import           DB.Utils
+import 			 Control.Applicative
+import qualified Types.Solution as S
+
+-- | Represents one row of the table solution.
+data SolutionDAO = SolutionDAO { solutionId :: DatabaseId
+                               , solutionText :: String
+                               , playerOfSolution :: DatabaseId
+                               , roundid :: DatabaseId
+                               }
+
+instance FromRow SolutionDAO where
+  fromRow = SolutionDAO <$> field <*> field <*> field <*> field
+
+-- | Parses one database row to a nice solution model.  
+parseSolution :: SolutionDAO -- ^ database row
+              -> P.Player    -- ^ player of the solution
+              -> S.Solution  -- ^ pretty solution object
+parseSolution solution player = S.Solution (Just $ solutionId solution) (solutionText solution) player
 
 -- | Create solution table.
 createTables :: SQL.Connection -- ^ database connection
@@ -35,16 +51,16 @@ createTables conn = do
 
 -- | Returns solutions of round.                 
 getSolutions :: DatabaseId                    -- ^ database id of the round
-             -> Handler App Sqlite [Solution] -- ^ 0 to 2 solutions
+             -> Handler App Sqlite [S.Solution] -- ^ 0 to 2 solutions
 getSolutions roundId = do
     results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only (roundId))
     player <- mapM (\dao -> PlayerDb.getPlayer $ playerOfSolution dao) results
-    return $ zipWith getSolution results player
+    return $ zipWith parseSolution results player
 
 -- | Inserts a solution in the database.
 insertSolution :: DatabaseId            -- ^ database id of the round
-               -> Solution              -- ^ Solution to insert
+               -> S.Solution              -- ^ Solution to insert
                -> Handler App Sqlite () -- ^ nothing
 insertSolution roundId newSolution = do
-    let values = (solution newSolution, P.playerId $ player newSolution, roundId)
+    let values = (S.solution newSolution, P.playerId $ S.player newSolution, roundId)
     execute "INSERT INTO solution (solution, player_id, round_id) VALUES (?)" values

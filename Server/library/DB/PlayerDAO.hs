@@ -2,7 +2,7 @@
 {-# LANGUAGE TemplateHaskell   #-}
 
 -- | Module, which provides database operations for players.
-module DB.PlayerDb 
+module DB.PlayerDAO
 ( createTables
 , savePlayer
 , getPlayer

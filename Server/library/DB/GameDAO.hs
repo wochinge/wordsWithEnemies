@@ -2,11 +2,12 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module, which provides database operations for Games.
-module DB.GameDb 
-( DB.GameDb.createTables 
+module DB.GameDAO 
+( DB.GameDAO.createTables 
 , insertGame
 ) where
 
+import 			 Control.Applicative
 import           Control.Monad
 import qualified Database.SQLite.Simple as SQL
 import           Snap.Snaplet
@@ -15,10 +16,27 @@ import qualified Data.Text as T
 import           Application
 import           DB.Utils
 import           Types.Round
-import           Types.Game
-import qualified DBAccess.GameDAO as GameDAO
+import qualified Types.Game as G
 import qualified Types.Player as P
-import           DB.RoundDb
+import           DB.RoundDAO
+import           Types.Score
+
+-- | Represents one row of the table game.
+data GameDAO = GameDAO { gameid    :: DatabaseId
+                       , player1id :: DatabaseId
+                       , player2id :: DatabaseId
+                       , status    :: Bool
+                       }
+
+instance FromRow GameDAO where
+  fromRow = GameDAO <$> field <*> field <*> field <*> field
+  
+-- | Parses one game row to a nice game model.
+parseGame :: GameDAO    -- ^ database row
+          -> [P.Player] -- ^ players of the game
+          -> [Round]    -- ^ rounds of a game
+          -> G.Game     -- ^ pretty game object
+parseGame game players rounds = G.Game (Just $ gameid game) players (status game) rounds
 
 -- | Creates the Game table.
 createTables :: SQL.Connection -- ^ database connection
@@ -35,14 +53,14 @@ createTables conn = do
                  ]
 
 -- | Inserts a game into the datebase.                 
-insertGame :: Game                    -- ^ the game to insert
-           -> Handler App Sqlite Game -- ^ inserted game including id
+insertGame :: G.Game                    -- ^ the game to insert
+           -> Handler App Sqlite G.Game -- ^ inserted game including id
 insertGame game = do
-    let values = (P.playerId $ head $ player game, P.playerId $ last $ player game, status game)
+    let values = (P.playerId $ head $ G.player game, P.playerId $ last $ G.player game, G.status game)
     execute_ "BEGIN"
     execute "INSERT INTO game (player1_id, player2_id, status) VALUES (?, ?, ?)" values
     inserted <- query_ "SELECT * FROM round WHERE game_id = MAX(game_id)"
-    let id = GameDAO.gameid $ head inserted
-    mapM_ (insertRound id) $ rounds game
+    let id = gameid $ head inserted
+    mapM_ (insertRound id) $ G.rounds game
     execute_ "COMMIT"
-    return $ game { gameId = Just id }
+    return $ game { G.gameId = Just id }

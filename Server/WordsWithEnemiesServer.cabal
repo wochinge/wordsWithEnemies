@@ -38,9 +38,8 @@ library
                             Api.PlayerApp, Api.PlayerSite, 
                             Snap.PrettySnap, 
                             Types.Player, Types.Game, Types.Round, Types.Score, Types.Solution,
-                            DB.PlayerDb, DB.Utils, DB.Dictionary, DB.GameDb,
-                            DB.SolutionDb, DB.ScoreDb, DB.RoundDb,
-                            DBAccess.GameDAO, DBAccess.RoundDAO, DBAccess.SolutionDAO, DBAccess.ScoreDAO
+                            DB.PlayerDAO, DB.Utils, DB.Dictionary, DB.GameDAO,
+                            DB.SolutionDAO, DB.ScoreDAO, DB.RoundDAO
     build-depends:
         base,
         monads-tf,

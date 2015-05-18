@@ -2,24 +2,44 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module, which provides database operations for rounds.
-module DB.RoundDb 
-( DB.RoundDb.createTables
+module DB.RoundDAO
+( DB.RoundDAO.createTables
 , getRounds
 , insertRound
 ) where
 
 import qualified Database.SQLite.Simple as SQL
 import           Data.Maybe
-import qualified DBAccess.RoundDAO as RoundDAO
-import           Types.Round
-import           DB.ScoreDb
-import           DB.SolutionDb
+import qualified Types.Round as R
+import           DB.ScoreDAO
+import           DB.SolutionDAO
 import           Snap.Snaplet.SqliteSimple
 import           Snap.Snaplet
 import           Application
 import qualified Data.Text as T
 import           DB.Utils
 import           Control.Monad
+import 			 Control.Applicative
+import           Types.Score
+import qualified Types.Round as R
+import           Types.Solution
+
+-- | Represents a database row of the table round.
+data RoundDAO = RoundDAO { roundid :: DatabaseId
+                         , roundnr :: Integer
+                         , gameid  :: DatabaseId
+                         , letters :: String
+                         }
+
+instance FromRow RoundDAO where
+  fromRow = RoundDAO <$> field <*> field <*> field <*> field
+
+-- | Parses a roundDao to a normal round object.
+parseRound :: RoundDAO    -- ^ round database row
+           -> Maybe Score -- ^ score of round
+           -> [Solution]  -- ^ solutions to a round
+           -> R.Round     -- ^ round model
+parseRound dao winnerScore solutions = R.Round (Just $ roundid dao) (Just $ roundnr dao) (letters dao) winnerScore solutions
 
 -- | Creates the round table.
 createTables :: SQL.Connection -- ^ database connection
@@ -35,28 +55,28 @@ createTables conn = do
                  ]             
 -- | Returns all the rounds of a game.
 getRounds :: DatabaseId                 -- ^ database id of the game
-          -> Handler App Sqlite [Round] -- ^ rounds of the game
+          -> Handler App Sqlite [R.Round] -- ^ rounds of the game
 getRounds gameId = do
     results <- query "SELECT * FROM round WHERE game_id = ?" (Only (gameId))
     mapM buildRound results
 
 -- | Builds one single round out of a the database row.
-buildRound :: RoundDAO.RoundDAO        -- ^ dao which represents a row in the db
-           -> Handler App Sqlite Round -- ^ normal round object
+buildRound :: RoundDAO        -- ^ dao which represents a row in the db
+           -> Handler App Sqlite R.Round -- ^ normal round object
 buildRound dao = do
-    score <- getScore $ RoundDAO.roundid dao
-    solutions <- getSolutions $ RoundDAO.roundid dao
-    return $ RoundDAO.getRound dao score solutions
+    score <- getScore $ roundid dao
+    solutions <- getSolutions $ roundid dao
+    return $ parseRound dao score solutions
 
 -- | Inserts a round in the database.
 insertRound :: DatabaseId            -- ^ database id of the game of the round
-            -> Round                 -- ^ round to insert
+            -> R.Round                 -- ^ round to insert
             -> Handler App Sqlite () -- ^ nothing
 insertRound gameId newRound = do
-    let values = (gameId, gameId, letters newRound)
+    let values = (gameId, gameId, R.letters newRound)
     execute "INSERT INTO round (round_nr, game_id, letters) VALUES ((SELECT IFNULL(MAX(round_r), 0) + 1 FROM round WHERE game_id = ?), ?, ?)" values
     inserted <- query "SELECT * FROM round WHERE round_nr = (SELECT MAX(round_r) FROM round where game_id = ?)" (Only (gameId))
-    let roundId = RoundDAO.roundid $ head inserted
-    mapM_ (\s -> insertSolution roundId s) $ solutions newRound
-    let score = roundScore newRound
+    let roundId = roundid $ head inserted
+    mapM_ (\s -> insertSolution roundId s) $ R.solutions newRound
+    let score = R.roundScore newRound
     when (isJust score) $ insertScore roundId (fromJust score)
