@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Api.PlayerSite where
+-- | Snaplet, which offers API functions to deal with players.
+module Api.PlayerSite (apiInit) where
 
 import 			     Snap.PrettySnap
 import 			     Data.Aeson
@@ -18,24 +19,29 @@ import 			     Api.PlayerApp
 import 			     Data.Maybe (fromJust)
 import 			     Application
 
-routes :: [(B.ByteString, Handler App PlayerApp())]
+-- | Defines, which handler is used for which http call and route.
+routes :: [(B.ByteString,               -- ^ route
+            Handler App PlayerApp())]   -- ^ handler for this route and http call
 routes = [ (""          , method POST createPlayer)
          , (":id/status", method GET  getStatus)
          ]
          
-apiInit :: SnapletInit App PlayerApp
+-- | Initializes the snaplet.         
+apiInit :: SnapletInit App PlayerApp -- ^ Snaplet initializer
 apiInit = makeSnaplet "playerApi" "handles users" Nothing $ do
     addRoutes routes
     return PlayerApp
-         
-createPlayer :: Handler App PlayerApp ()
+
+-- | Handler, which takes care of creating players.   
+createPlayer :: Handler App PlayerApp () -- ^ nothing
 createPlayer = do
     body <- readRequestBody 2048
     setStatusCode 201
     dBResult <- withTop playerDb (savePlayer $ decodeBody body)
     setBody $ dBResult
 
-getStatus :: Handler App PlayerApp ()
+-- | Handler, which provides information for a player whether a opponent was found.
+getStatus :: Handler App PlayerApp () -- ^ nothing
 getStatus = do
 		userId <- getParam "id"
 		--  game <- getGame userId

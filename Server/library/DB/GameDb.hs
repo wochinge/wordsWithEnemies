@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DB.GameDb where
+-- | Module, which provides database operations for Games.
+module DB.GameDb 
+( DB.GameDb.createTables 
+, insertGame
+) where
 
 import           Control.Monad
 import qualified Database.SQLite.Simple as SQL
@@ -18,7 +22,7 @@ import           DB.RoundDb
 
 -- | Creates the Game table.
 createTables :: SQL.Connection -- ^ database connection
-             -> IO ()        -- ^ nothing
+             -> IO ()          -- ^ nothing
 createTables conn = do
     createTable conn "game" $
         T.concat [ "CREATE TABLE game ("
@@ -29,8 +33,10 @@ createTables conn = do
                  , "FOREIGN KEY(player1_id) REFERENCES player(player_id), "
                  , "FOREIGN KEY(player2_id) REFERENCES player(player_id))"
                  ]
-    
-insertGame :: Game -> Handler App Sqlite Game
+
+-- | Inserts a game into the datebase.                 
+insertGame :: Game                    -- ^ the game to insert
+           -> Handler App Sqlite Game -- ^ inserted game including id
 insertGame game = do
     let values = (P.playerId $ head $ player game, P.playerId $ last $ player game, status game)
     execute_ "BEGIN"

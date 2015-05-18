@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
+-- | Module for the model score.
 module Types.Score where
 
 import 			 Data.Aeson

@@ -1,7 +1,14 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
-module DB.PlayerDb where
+-- | Module, which provides database operations for players.
+module DB.PlayerDb 
+( createTables
+, savePlayer
+, getPlayer
+, insertWaitingPlayer
+, getTwoWaitingPlayers
+) where
 
 import           Control.Applicative
 import           Control.Monad
@@ -14,7 +21,9 @@ import           DB.Utils
 import           Application
 import           Data.Maybe
 
-createTables :: S.Connection -> IO ()
+-- | Creates the player and the queue table.
+createTables :: S.Connection -- ^ database connection
+             -> IO ()        -- ^ nothing
 createTables conn = do
     createTable conn "player" $
         T.concat [ "CREATE TABLE player ("
@@ -27,8 +36,10 @@ createTables conn = do
                  , "waiting_player INTEGER, "
                  , "FOREIGN KEY(waiting_player) REFERENCES player(player_id))"
                  ]
-           
-savePlayer :: Player -> Handler App Sqlite Player
+
+-- | Saves a player to the database.                 
+savePlayer :: Player                    -- ^ player to insert
+           -> Handler App Sqlite Player -- ^ inserted player including id
 savePlayer (Player _ name) = do
     execute "INSERT INTO player (nickname) VALUES (?)" (Only (name))
     result <- query "SELECT * FROM player WHERE player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (Only (name))
@@ -36,16 +47,22 @@ savePlayer (Player _ name) = do
     insertWaitingPlayer $ fromJust $ playerId savedPlayer
     return savedPlayer
 
-getPlayer :: Integer -> Handler App Sqlite Player
+-- | Gets a player with a specific id from the database.
+getPlayer :: DatabaseId                 -- ^ id of the player
+          -> Handler App Sqlite Player  -- ^ wanted player
 getPlayer id = do
     result <- query "SELECT * FROM player WHERE player_id = ?" (Only (id))
     return $ head result
 
-insertWaitingPlayer :: Integer -> Handler App Sqlite ()
+-- | Inserts a player in the waiting queue.
+insertWaitingPlayer :: DatabaseId            -- ^ Id of the waiting player
+                    -> Handler App Sqlite () -- ^ Nothing
 insertWaitingPlayer player_id = 
     execute "INSERT INTO queue (waiting_player) VALUES (?)" (Only (player_id))
 
-getTwoWaitingPlayers :: Handler App Sqlite [Player]
+-- | Returns a maximum of two player out of the waiting queue.
+-- | Take care: Can also be less then two players.
+getTwoWaitingPlayers :: Handler App Sqlite [Player] -- ^ 0 to 2 players out of the waiting queue
 getTwoWaitingPlayers = do
     result <- query_ "SELECT waiting_player FROM queue LIMIT 2"
     mapM getPlayer $ extracted result

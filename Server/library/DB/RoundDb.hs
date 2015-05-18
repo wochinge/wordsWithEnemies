@@ -1,7 +1,12 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DB.RoundDb where
+-- | Module, which provides database operations for rounds.
+module DB.RoundDb 
+( DB.RoundDb.createTables
+, getRounds
+, insertRound
+) where
 
 import qualified Database.SQLite.Simple as SQL
 import           Data.Maybe
@@ -16,6 +21,7 @@ import qualified Data.Text as T
 import           DB.Utils
 import           Control.Monad
 
+-- | Creates the round table.
 createTables :: SQL.Connection -- ^ database connection
              -> IO ()        -- ^ nothing
 createTables conn = do
@@ -27,19 +33,25 @@ createTables conn = do
                  , "letters TEXT NOT NULL, "
                  , "FOREIGN KEY(game_id) REFERENCES game(game_id))"
                  ]             
-
-getRounds :: Integer -> Handler App Sqlite [Round]
+-- | Returns all the rounds of a game.
+getRounds :: DatabaseId                 -- ^ database id of the game
+          -> Handler App Sqlite [Round] -- ^ rounds of the game
 getRounds gameId = do
     results <- query "SELECT * FROM round WHERE game_id = ?" (Only (gameId))
     mapM buildRound results
 
-buildRound :: RoundDAO.RoundDAO -> Handler App Sqlite Round
+-- | Builds one single round out of a the database row.
+buildRound :: RoundDAO.RoundDAO        -- ^ dao which represents a row in the db
+           -> Handler App Sqlite Round -- ^ normal round object
 buildRound dao = do
     score <- getScore $ RoundDAO.roundid dao
     solutions <- getSolutions $ RoundDAO.roundid dao
     return $ RoundDAO.getRound dao score solutions
 
-insertRound :: Integer -> Round -> Handler App Sqlite ()
+-- | Inserts a round in the database.
+insertRound :: DatabaseId            -- ^ database id of the game of the round
+            -> Round                 -- ^ round to insert
+            -> Handler App Sqlite () -- ^ nothing
 insertRound gameId newRound = do
     let values = (gameId, gameId, letters newRound)
     execute "INSERT INTO round (round_nr, game_id, letters) VALUES ((SELECT IFNULL(MAX(round_r), 0) + 1 FROM round WHERE game_id = ?), ?, ?)" values

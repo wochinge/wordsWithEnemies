@@ -1,7 +1,12 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DB.Utils where
+-- | Module with functions for easy database handling.
+module DB.Utils 
+( tableExists
+, createTable
+, DatabaseId
+) where
 
 import           Control.Applicative
 import           Control.Monad
@@ -12,15 +17,23 @@ import           Data.Text
 
 type Table           = String
 type CreateStatement = Text
+type DatabaseId      = Integer
 
-tableExists :: S.Connection -> Table -> IO Bool
+-- | Checks whether a tables already exists in the database.
+tableExists :: S.Connection -- ^ database connection
+            -> Table        -- ^ name of the table
+            -> IO Bool      -- ^ true if it exists already, otherwise false
 tableExists con tableName = do
     r <- S.query con "SELECT name FROM sqlite_master WHERE type='table' AND name=?" (Only tableName)
     case r of
         [Only (_ :: String)] -> return True
         _ -> return False
 
-createTable :: S.Connection -> Table -> CreateStatement -> IO ()
+-- | Creates a table in the database.
+createTable :: S.Connection    -- ^ database connection
+            -> Table           -- ^ name of the table
+            -> CreateStatement -- ^ sql statement to create the table
+            -> IO ()           -- ^ nothing
 createTable conn name statement = do
     tableCreated <- tableExists conn name
     unless tableCreated $

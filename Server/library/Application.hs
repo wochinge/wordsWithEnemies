@@ -2,6 +2,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
+-- | Module, which defines and holds several sub snaplets.
 module Application where
 
 import           Control.Lens
@@ -21,5 +22,6 @@ data App = App { _playerSnaplet :: Snaplet PlayerApp
 
 makeLenses ''App
 
+-- | Provides a HasSqlite instance for this module.
 instance HasSqlite (Handler b App) where
     getSqliteState = with playerDb get

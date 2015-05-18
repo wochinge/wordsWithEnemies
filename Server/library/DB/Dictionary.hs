@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
+-- | Module, which offers functions to access a dictionary with the most
+-- | common english words. 
 module DB.Dictionary (createTables, wordExists, getRandomWord) where
 
 import           Control.Applicative

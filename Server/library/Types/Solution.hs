@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
+-- | Module for the model solution.
 module Types.Solution where
 
 import 			 Data.Aeson

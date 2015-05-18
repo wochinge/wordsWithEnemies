@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
+-- | Module for the model round.
 module Types.Round where
 
 import           Data.Aeson

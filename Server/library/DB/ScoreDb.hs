@@ -1,7 +1,12 @@
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DB.ScoreDb where
+-- | Module for database operations for Score objects.
+module DB.ScoreDb 
+( createTables
+, getScore
+, insertScore
+) where
 
 import qualified Database.SQLite.Simple as SQL
 import qualified Types.Player as P
@@ -14,8 +19,9 @@ import           Application
 import qualified Data.Text as T
 import           DB.Utils
 
+-- | Creates score table.
 createTables :: SQL.Connection -- ^ database connection
-             -> IO ()        -- ^ nothing
+             -> IO ()          -- ^ nothing
 createTables conn = do
     createTable conn "roundscore" $
         T.concat [ "CREATE TABLE roundscore ("
@@ -26,8 +32,10 @@ createTables conn = do
                  , "FOREIGN KEY(winner) REFERENCES player(player_id), "
                  , "FOREIGN KEY(round_id) REFERENCES round(round_id))"
                  ]
-             
-getScore :: Integer -> Handler App Sqlite (Maybe Score)
+
+-- | Returns score of a round out of the database.                 
+getScore :: DatabaseId                       -- ^ id of the round
+         -> Handler App Sqlite (Maybe Score) -- ^ Score of the round or nothing
 getScore roundId = do
     results <- query "SELECT * FROM score WHERE round_id = ? LIMIT 1" (Only (roundId))
     let score = head results
@@ -37,7 +45,10 @@ getScore roundId = do
             return $ Just $ DAO.getScore score player
         else return Nothing
 
-insertScore :: Integer -> Score -> Handler App Sqlite ()
+-- | Inserts a score into the database.
+insertScore :: DatabaseId            -- ^ database id of the round
+            -> Score                 -- ^ Score to insert
+            -> Handler App Sqlite () -- ^ Nothing
 insertScore roundId newScore = do
     let values = (roundId, P.playerId $ player newScore, score newScore)
     execute "INSERT INTO roundscore (round_id, winner, score) VALUES (?, ?, ?)" values

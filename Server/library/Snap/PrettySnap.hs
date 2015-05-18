@@ -1,7 +1,11 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | A module which offers more readable method calls.
-module Snap.PrettySnap where
+module Snap.PrettySnap 
+( setStatusCode
+, setBody
+, decodeBody
+) where
 
 import 			 Data.Aeson
 import 			 Data.Maybe

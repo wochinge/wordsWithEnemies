@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
+-- | Module for the model player.
 module Types.Player where
 
 import           Data.Aeson

@@ -1,6 +1,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Site where
+-- | Module, which nests all the used sub snaplets, defined bei the module Application,
+-- | and initializes them.
+module Site (initApplication) where
 
 import           Application
 import           Snap.Core
@@ -17,7 +19,9 @@ import qualified DB.SolutionDb as Sol_Db
 import           Control.Lens
 import           Control.Concurrent
 
-initApplication :: SnapletInit App App
+-- | Initializes the main application by initializing the sub snaplets.
+-- | It also establishes the db connection.
+initApplication :: SnapletInit App App -- ^ Snaplet initializer
 initApplication = makeSnaplet "wordsWithEnemies" "Web api for Words with Enemies" Nothing $ do
     player <- nestSnaplet "player" playerSnaplet $ apiInit
     playerDb <- nestSnaplet "playerDb" playerDb sqliteInit
