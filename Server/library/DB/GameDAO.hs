@@ -91,7 +91,7 @@ insertGame game = do
     let values = (P.playerId $ head $ G.player game, P.playerId $ last $ G.player game, G.status game)
     execute_ "BEGIN"
     execute "INSERT INTO game (player1_id, player2_id, status) VALUES (?, ?, ?)" values
-    inserted <- query_ "SELECT * FROM round WHERE game_id = MAX(game_id)"
+    inserted <- query_ "SELECT * FROM game ORDER BY game_id DESC LIMIT 1"
     let id = gameid $ head inserted
     mapM_ (RoundDb.insertRound id) $ G.rounds game
     execute_ "COMMIT"
