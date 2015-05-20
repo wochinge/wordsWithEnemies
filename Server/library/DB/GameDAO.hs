@@ -6,6 +6,7 @@ module DB.GameDAO
 ( DB.GameDAO.createTables 
 , insertGame
 , getGame
+, getGameWithPlayer
 ) where
 
 import 			 Control.Applicative
@@ -79,10 +80,10 @@ buildGame dao = do
 getGameWithPlayer :: DatabaseId                        -- ^ Id of the player
                   -> Handler App Sqlite (Maybe G.Game) -- ^ A game if the players has one, else Nothing
 getGameWithPlayer playerId = do
-    results <- query "SELECT game_id FROM game WHERE (player1_id = ? OR player2_id = ?) AND status = False" (playerId, playerId)
+    results <- query "SELECT game_id FROM game WHERE (player1_id = ? OR player2_id = ?) AND status = ?" (playerId, playerId, False)
     case results of
       [] -> return Nothing
-      [Only _] -> getGame $ fromOnly $ head results 
+      [Only id] -> getGame id 
 
 -- | Inserts a game into the datebase.                 
 insertGame :: G.Game                    -- ^ the game to insert
@@ -95,4 +96,5 @@ insertGame game = do
     let id = gameid $ head inserted
     mapM_ (RoundDb.insertRound id) $ G.rounds game
     execute_ "COMMIT"
-    return $ game { G.gameId = Just id }
+    insertedGame <- getGame id
+    return $ fromJust insertedGame

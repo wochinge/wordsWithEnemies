@@ -54,7 +54,7 @@ createTables conn = do
 getScore :: DatabaseId                       -- ^ id of the round
          -> Handler App Sqlite (Maybe S.Score) -- ^ Score of the round or nothing
 getScore roundId = do
-    results <- query "SELECT * FROM score WHERE round_id = ? LIMIT 1" (Only (roundId))
+    results <- query "SELECT * FROM roundscore WHERE round_id = ? LIMIT 1" (Only (roundId))
     let score = head results
     if null results
         then

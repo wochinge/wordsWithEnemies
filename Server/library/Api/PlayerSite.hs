@@ -16,7 +16,7 @@ import 			 Snap.Snaplet.Auth.Backends.SqliteSimple
 import 			 DB.PlayerDAO
 import 			 DB.Dictionary
 import 			 Api.PlayerApp
-import 			 Data.Maybe (fromJust)
+import 			 Data.Maybe
 import 			 Application
 import           DB.Dictionary
 import           DB.GameDAO
@@ -25,6 +25,7 @@ import           Types.Game
 import           Types.Round
 import           Data.List
 import           Control.Monad.Trans
+import           Control.Monad
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App PlayerApp())]   -- ^ route, handler for this route and http call
@@ -58,7 +59,9 @@ createGame players = do
     letters <- withTop dictionary getRandomWord
     random <- shuffle letters
     let game = Game Nothing players False [Round Nothing Nothing random Nothing []]
-    withTop gameDb $ insertGame game
+    game <- withTop gameDb $ insertGame game
+    withTop playerDb $ dropTwoPlayersFromQueue players
+    liftIO $ putStrLn $ show game
     return ()
 
 shuffle :: String -> Handler App PlayerApp String 
@@ -67,12 +70,16 @@ shuffle xs = do
     let (permNum, newGen) = randomR (1, fac (length xs) -1) gen
     return $ permutations xs !! permNum
 
+fac :: (Enum a, Num a) => a -> a
 fac n = product [n, n-1 .. 1]
 
 -- | Handler, which provides information for a player whether a opponent was found.
 getStatus :: Handler App PlayerApp () -- ^ nothing
 getStatus = do
-		userId <- getParam "id"
-		--  game <- getGame userId
-		  -- setBody game
-		setStatusCode 200
+    idAsByteString <- getParam $ B.pack "id"
+    let userId = read $ B.unpack $ fromJust idAsByteString
+    liftIO $ putStrLn $ show userId
+    game <- withTop gameDb $ getGameWithPlayer userId
+    liftIO $ putStrLn $ show game
+    when (isJust game) $ setBody $ fromJust game
+    setStatusCode 200

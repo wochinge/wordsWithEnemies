@@ -74,8 +74,8 @@ insertRound :: DatabaseId            -- ^ database id of the game of the round
             -> Handler App Sqlite () -- ^ nothing
 insertRound gameId newRound = do
     let values = (gameId, gameId, R.letters newRound)
-    execute "INSERT INTO round (round_nr, game_id, letters) VALUES ((SELECT IFNULL(MAX(round_r), 0) + 1 FROM round WHERE game_id = ?), ?, ?)" values
-    inserted <- query "SELECT * FROM round WHERE round_nr = (SELECT MAX(round_r) FROM round where game_id = ?)" (Only (gameId))
+    execute "INSERT INTO round (round_nr, game_id, letters) VALUES ((SELECT IFNULL(MAX(round_nr), 0) + 1 FROM round WHERE game_id = ?), ?, ?)" values
+    inserted <- query "SELECT * FROM round WHERE round_nr = (SELECT MAX(round_nr) FROM round where game_id = ?)" (Only (gameId))
     let roundId = roundid $ head inserted
     mapM_ (\s -> insertSolution roundId s) $ R.solutions newRound
     let score = R.roundScore newRound
