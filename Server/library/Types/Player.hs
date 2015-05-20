@@ -6,8 +6,8 @@ module Types.Player where
 
 import           Data.Aeson
 import 			 Data.Aeson.TH
-import 			 Database.SQLite.Simple
 import 			 Control.Applicative
+import           Database.SQLite.Simple
 
 data Player = Player { playerId :: Maybe Integer -- ID kann auch leer sein
                      , name :: String

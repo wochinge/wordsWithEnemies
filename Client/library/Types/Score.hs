@@ -1,18 +1,16 @@
-{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell   #-}
+
+-- | Module for the model score.
 module Types.Score where
 
-import Data.Aeson
-import Data.Aeson.TH
-import Database.SQLite.Simple
-import Control.Applicative
-import Types.Player
+import 			 Data.Aeson
+import 			 Data.Aeson.TH
+import 			 Types.Player
 
-data Score = Score { score :: Int
+data Score = Score { scoreId :: Maybe Integer
+                   , score :: Integer
                    , player :: Player 
                    } deriving (Show, Eq)
-
-
-instance FromRow Score where
-  fromRow = Score <$> field <*> field
     
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Score)

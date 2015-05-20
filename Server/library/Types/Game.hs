@@ -6,8 +6,6 @@ module Types.Game where
 
 import 			 Data.Aeson
 import 			 Data.Aeson.TH
-import 			 Database.SQLite.Simple
-import 			 Control.Applicative
 import 			 Types.Player
 import 			 Types.Score
 import 			 Types.Round
