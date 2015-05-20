@@ -18,6 +18,7 @@ import           Application
 import qualified Data.Text as T
 import           DB.Utils
 import 			 Control.Applicative
+import           Data.Maybe
 
 -- | Represents one row of the table score.
 data ScoreDAO = ScoreDAO { scoreid :: DatabaseId
@@ -58,7 +59,7 @@ getScore roundId = do
     if null results
         then do
             player <- PlayerDb.getPlayer $ winnerid score
-            return $ Just $ parseScore score player
+            return $ Just $ parseScore score $ fromJust player
         else return Nothing
 
 -- | Inserts a score into the database.

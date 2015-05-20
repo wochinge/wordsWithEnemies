@@ -5,6 +5,7 @@
 module DB.GameDAO 
 ( DB.GameDAO.createTables 
 , insertGame
+, getGame
 ) where
 
 import 			 Control.Applicative
@@ -18,8 +19,10 @@ import           DB.Utils
 import           Types.Round
 import qualified Types.Game as G
 import qualified Types.Player as P
-import           DB.RoundDAO
+import qualified DB.RoundDAO as RoundDb
+import qualified DB.PlayerDAO as PlayerDb
 import           Types.Score
+import           Data.Maybe
 
 -- | Represents one row of the table game.
 data GameDAO = GameDAO { gameid    :: DatabaseId
@@ -51,7 +54,27 @@ createTables conn = do
                  , "FOREIGN KEY(player1_id) REFERENCES player(player_id), "
                  , "FOREIGN KEY(player2_id) REFERENCES player(player_id))"
                  ]
-
+                 
+-- | Returns the game searched for by id               
+getGame :: DatabaseId                    -- ^ database id of the game
+             -> Handler App Sqlite (Maybe G.Game)
+getGame gameId = do
+    results <- query "SELECT * FROM game WHERE game_id = ? LIMIT 2" (Only (gameId))
+    let game = head results
+    if null results
+        then do
+            fmap Just $ buildGame game
+        else return Nothing
+        
+ -- | Builds one single game out of a the database row.
+buildGame :: GameDAO        -- ^ dao which represents a row in the db
+           -> Handler App Sqlite G.Game -- ^ normal game object
+buildGame dao = do
+    player1 <- PlayerDb.getPlayer $ player1id dao
+    player2 <- PlayerDb.getPlayer $ player2id dao
+    rounds  <- RoundDb.getRounds $ gameid dao
+    return $ parseGame dao [fromJust player1, fromJust player2] rounds
+                 
 -- | Inserts a game into the datebase.                 
 insertGame :: G.Game                    -- ^ the game to insert
            -> Handler App Sqlite G.Game -- ^ inserted game including id
@@ -61,6 +84,6 @@ insertGame game = do
     execute "INSERT INTO game (player1_id, player2_id, status) VALUES (?, ?, ?)" values
     inserted <- query_ "SELECT * FROM round WHERE game_id = MAX(game_id)"
     let id = gameid $ head inserted
-    mapM_ (insertRound id) $ G.rounds game
+    mapM_ (RoundDb.insertRound id) $ G.rounds game
     execute_ "COMMIT"
     return $ game { G.gameId = Just id }

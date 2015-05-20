@@ -18,6 +18,7 @@ import qualified Data.Text as T
 import           DB.Utils
 import 			 Control.Applicative
 import qualified Types.Solution as S
+import           Data.Maybe
 
 -- | Represents one row of the table solution.
 data SolutionDAO = SolutionDAO { solutionId :: DatabaseId
@@ -55,7 +56,7 @@ getSolutions :: DatabaseId                    -- ^ database id of the round
 getSolutions roundId = do
     results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only (roundId))
     player <- mapM (\dao -> PlayerDb.getPlayer $ playerOfSolution dao) results
-    return $ zipWith parseSolution results player
+    return $ zipWith parseSolution results $ map fromJust player
 
 -- | Inserts a solution in the database.
 insertSolution :: DatabaseId            -- ^ database id of the round

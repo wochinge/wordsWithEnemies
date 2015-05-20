@@ -49,10 +49,14 @@ savePlayer (Player _ name) = do
 
 -- | Gets a player with a specific id from the database.
 getPlayer :: DatabaseId                 -- ^ id of the player
-          -> Handler App Sqlite Player  -- ^ wanted player
+          -> Handler App Sqlite (Maybe Player)  -- ^ wanted player
 getPlayer id = do
     result <- query "SELECT * FROM player WHERE player_id = ?" (Only (id))
-    return $ head result
+    let player = head result
+    if null result
+        then do
+           return $ Just player
+        else return Nothing
 
 -- | Inserts a player in the waiting queue.
 insertWaitingPlayer :: DatabaseId            -- ^ Id of the waiting player
@@ -65,6 +69,7 @@ insertWaitingPlayer player_id =
 getTwoWaitingPlayers :: Handler App Sqlite [Player] -- ^ 0 to 2 players out of the waiting queue
 getTwoWaitingPlayers = do
     result <- query_ "SELECT waiting_player FROM queue LIMIT 2"
-    mapM getPlayer $ extracted result
+    players <- mapM getPlayer $ extracted result
+    return $ map fromJust players
     where 
       extracted listOfOnlys= map fromOnly listOfOnlys
