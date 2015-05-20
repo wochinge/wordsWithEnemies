@@ -65,7 +65,7 @@ getGame gameId = do
         then do
             return Nothing
         else fmap Just $ buildGame game
-        
+
  -- | Builds one single game out of a the database row.
 buildGame :: GameDAO        -- ^ dao which represents a row in the db
            -> Handler App Sqlite G.Game -- ^ normal game object
@@ -74,7 +74,16 @@ buildGame dao = do
     player2 <- PlayerDb.getPlayer $ player2id dao
     rounds  <- RoundDb.getRounds $ gameid dao
     return $ parseGame dao [fromJust player1, fromJust player2] rounds
-                 
+
+-- | Returns a running game of a specific player.
+getGameWithPlayer :: DatabaseId                        -- ^ Id of the player
+                  -> Handler App Sqlite (Maybe G.Game) -- ^ A game if the players has one, else Nothing
+getGameWithPlayer playerId = do
+    results <- query "SELECT game_id FROM game WHERE (player1_id = ? OR player2_id = ?) AND status = False" (playerId, playerId)
+    case results of
+      [] -> return Nothing
+      [Only _] -> getGame $ fromOnly $ head results 
+
 -- | Inserts a game into the datebase.                 
 insertGame :: G.Game                    -- ^ the game to insert
            -> Handler App Sqlite G.Game -- ^ inserted game including id
