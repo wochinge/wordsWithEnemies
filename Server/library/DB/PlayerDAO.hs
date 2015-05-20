@@ -55,8 +55,8 @@ getPlayer id = do
     let player = head result
     if null result
         then do
-           return $ Just player
-        else return Nothing
+           return Nothing
+        else return $ Just player
 
 -- | Inserts a player in the waiting queue.
 insertWaitingPlayer :: DatabaseId            -- ^ Id of the waiting player
