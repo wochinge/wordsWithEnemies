@@ -24,7 +24,7 @@ import           System.Random
 import           Types.Game
 import           Types.Round
 import           Data.List
-
+import           Control.Monad.Trans
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App PlayerApp())]   -- ^ route, handler for this route and http call
@@ -63,7 +63,7 @@ createGame players = do
 
 shuffle :: String -> Handler App PlayerApp String 
 shuffle xs = do
-    gen <- getStdGen
+    gen <- liftIO getStdGen
     let (permNum, newGen) = randomR (1, fac (length xs) -1) gen
     return $ permutations xs !! permNum
 

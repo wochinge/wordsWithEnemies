@@ -52,7 +52,8 @@ library
         snaplet-sqlite-simple >= 0.4.8.2,
         sqlite-simple >= 0.4.8.0,
         text,
-        random
+        random,
+        transformers
     if flag(documentation)
         build-depends: hscolour == 1.20.*
 
