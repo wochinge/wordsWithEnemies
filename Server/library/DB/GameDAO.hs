@@ -63,8 +63,8 @@ getGame gameId = do
     let game = head results
     if null results
         then do
-            fmap Just $ buildGame game
-        else return Nothing
+            return Nothing
+        else fmap Just $ buildGame game
         
  -- | Builds one single game out of a the database row.
 buildGame :: GameDAO        -- ^ dao which represents a row in the db

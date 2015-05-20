@@ -57,10 +57,11 @@ getScore roundId = do
     results <- query "SELECT * FROM score WHERE round_id = ? LIMIT 1" (Only (roundId))
     let score = head results
     if null results
-        then do
+        then
+           return Nothing
+        else do  
             player <- PlayerDb.getPlayer $ winnerid score
             return $ Just $ parseScore score $ fromJust player
-        else return Nothing
 
 -- | Inserts a score into the database.
 insertScore :: DatabaseId            -- ^ database id of the round
