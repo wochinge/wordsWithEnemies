@@ -60,7 +60,7 @@ createGame players = do
     random <- shuffle letters
     let game = Game Nothing players False [Round Nothing Nothing random Nothing []]
     game <- withTop gameDb $ insertGame game
-    withTop playerDb $ dropTwoPlayersFromQueue players
+    withTop playerDb $ dropFromQueue players
     liftIO $ putStrLn $ show game
     return ()
 

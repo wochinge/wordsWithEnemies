@@ -8,7 +8,7 @@ module DB.PlayerDAO
 , getPlayer
 , insertWaitingPlayer
 , getTwoWaitingPlayers
-, dropTwoPlayersFromQueue
+, dropFromQueue
 ) where
 
 import           Control.Applicative
@@ -75,7 +75,7 @@ getTwoWaitingPlayers = do
     where 
       extracted listOfOnlys= map fromOnly listOfOnlys
 
-dropTwoPlayersFromQueue :: [Player] -> Handler App Sqlite ()
-dropTwoPlayersFromQueue players = do
-    let values = (playerId $ head players, playerId $ last players)
-    execute "DELETE FROM queue WHERE waiting_player = ? OR waiting_player = ?" values
+dropFromQueue :: [Player] -> Handler App Sqlite ()
+dropFromQueue players = do
+    mapM (\p -> execute "DELETE FROM queue WHERE waiting_player = ?" (Only (playerId p))) players
+    return ()
