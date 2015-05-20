@@ -23,7 +23,13 @@ library
     exposed-modules:        Game, 
                             Network.EasyNetwork, 
                             Network.PlayerClient, 
-                            Types.Player
+                            Types.Player,
+                            Network.GameClient,
+                            Types.Game,
+                            Types.Round,
+                            Types.Score,
+                            Types.Solution
+
     hs-source-dirs:         library
     build-depends:      
         base, 

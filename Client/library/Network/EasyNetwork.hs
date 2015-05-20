@@ -1,16 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | A modul which offers simplified network commands.
-module Network.EasyNetwork (
-    put', 
-    post', 
-    get') where
+module Network.EasyNetwork 
+( put'
+, post'
+, get'
+, server
+) where
 
 import Network.Wreq
 import Data.ByteString.Lazy
 import Data.Aeson
 import Control.Lens
 import Data.Maybe
+
+server :: String 
+server = "http://localhost:9000/"
 
 -- | Operation for a http-put. Normally used for updating objects.
 put' :: ToJSON a

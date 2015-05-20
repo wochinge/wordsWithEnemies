@@ -3,6 +3,11 @@ module Game where
 import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
 import System.Exit (exitSuccess)
 import Network.PlayerClient
+import Network.GameClient
+import Data.Maybe
+import GHC.Conc
+import Types.Player
+import Types.Game
 
 welcomeMessage :: String
 welcomeMessage = "Welcome to Words with Enemies\n\n \
@@ -48,3 +53,18 @@ handleNickname name
     | otherwise = do
         player <- createPlayer name
         putStrLn $ show player
+        checkForGame $ fromJust player
+
+checkForGame :: Player -> IO ()
+checkForGame player = do
+    game <- loopForGame player
+    putStrLn $ show game
+
+loopForGame :: Player -> IO Game
+loopForGame player = do 
+    game <- getStatus player
+    if (isNothing game)
+        then do 
+            threadDelay 1000000
+            loopForGame player
+    else return $ fromJust game
