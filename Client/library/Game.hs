@@ -14,6 +14,9 @@ welcomeMessage = "Welcome to Words with Enemies\n\n \
                  \Please choose one of the following options:\n\
                  \[s]: Start game \t [h]: Help \t [q]: Quit"
 
+waitingMessage :: String
+waitingMessage = "Searching for a Teammate"
+
 startGame :: IO ()
 startGame = do 
     hSetBuffering stdout NoBuffering
@@ -57,6 +60,7 @@ handleNickname name
 
 checkForGame :: Player -> IO ()
 checkForGame player = do
+    putStrLn waitingMessage
     game <- loopForGame player
     putStrLn $ show game
 
