@@ -9,7 +9,7 @@ import 			 Data.Aeson.TH
 import 			 Types.Player
 
 data Score = Score { scoreId :: Maybe Integer
-                   , score :: Integer
+                   , score :: Int
                    , player :: Player 
                    } deriving (Show, Eq)
     

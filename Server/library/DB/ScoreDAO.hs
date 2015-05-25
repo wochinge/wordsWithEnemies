@@ -24,7 +24,7 @@ import           Data.Maybe
 data ScoreDAO = ScoreDAO { scoreid :: DatabaseId
                          , roundid :: DatabaseId
                          , winnerid :: DatabaseId
-                         , roundScore :: Integer
+                         , roundScore :: Int
                          }
 
 instance FromRow ScoreDAO where

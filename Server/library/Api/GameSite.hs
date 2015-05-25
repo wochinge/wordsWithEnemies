@@ -12,8 +12,15 @@ import 			 Snap.Snaplet
 import 			 Snap.Snaplet.SqliteSimple
 import           Application
 import           Api.GameApp
+import           Types.Score
+import           Types.Solution
+import           Types.Round
+import           Data.List (delete)
 import           DB.GameDAO
-import           DB.SolutionDAO (insertSolution)
+import           DB.Dictionary
+import           DB.ScoreDAO
+import           DB.RoundDAO
+import           DB.SolutionDAO (insertSolution, getSolutions)
 import           Control.Monad.Trans
 import           Control.Monad
 import           Data.Maybe
@@ -40,6 +47,40 @@ retrieveGame = do
 createSolution :: Handler App GameApp () -- ^ nothing
 createSolution = do
     roundId <- getIdParam "roundId"
-    solution <- getJSONBody
+    round <- withTop roundDAO $ getRound roundId
+    let task = letters $ fromJust round
+
+    playerSolution <- getJSONBody
     setStatusCode 201
-    withTop solutionDAO $ insertSolution roundId solution
+    solutionExists <- withTop dictionary $ wordExists $ solution playerSolution
+
+    let cleanSolution = deleteFromText task $ solution playerSolution
+    let solutionFitsLetters = (length cleanSolution) == 0
+
+    if (solutionExists && solutionFitsLetters)
+        then
+            withTop solutionDAO $ insertSolution roundId playerSolution
+        else
+            withTop solutionDAO $ insertSolution roundId $ playerSolution {solution = ""}
+    
+    solutions <- withTop solutionDAO $ getSolutions roundId
+    when ((length solutions) == 2) $ do
+        saveScore roundId (head solutions) (last solutions)
+
+saveScore :: Integer -> Solution -> Solution -> Handler App GameApp ()
+saveScore roundId (Solution _  letters1 player1) (Solution _ letters2 player2) 
+    | letters1L > letters2L = withTop scoreDAO $ insertScore roundId $ Score Nothing (letters1L - letters2L) player1
+    | letters1L < letters2L= withTop scoreDAO $ insertScore roundId $ Score Nothing (letters2L - letters1L) player2
+    | otherwise = return ()
+    where
+        letters1L = length letters1
+        letters2L = length letters2
+
+deleteFromText :: String -> String -> String
+deleteFromText _ [] = []
+deleteFromText (x:xs) text =
+    deleteFromText xs $ delete x text 
+
+
+
+
