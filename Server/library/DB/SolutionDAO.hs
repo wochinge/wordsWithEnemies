@@ -64,4 +64,4 @@ insertSolution :: DatabaseId            -- ^ database id of the round
                -> Handler App Sqlite () -- ^ nothing
 insertSolution roundId newSolution = do
     let values = (S.solution newSolution, P.playerId $ S.player newSolution, roundId)
-    execute "INSERT INTO solution (solution, player_id, round_id) VALUES (?)" values
+    execute "INSERT INTO solution (solution, player_id, round_id) VALUES (?, ?, ?)" values

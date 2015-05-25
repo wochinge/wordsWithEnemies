@@ -9,19 +9,21 @@ import           Control.Lens
 import           Snap.Snaplet
 import           Snap
 import           Api.PlayerApp
+import			 Api.GameApp
 import           Snap.Snaplet.SqliteSimple
 
 data App = App { _playerSnaplet :: Snaplet PlayerApp
-               , _playerDb :: Snaplet Sqlite
+			   , _gameSnaplet :: Snaplet GameApp
+               , _playerDAO :: Snaplet Sqlite
                , _dictionary :: Snaplet Sqlite
-               , _gameDb :: Snaplet Sqlite
-               , _roundDb :: Snaplet Sqlite
-               , _scoreDb :: Snaplet Sqlite
-               , _solutionDb :: Snaplet Sqlite
+               , _gameDAO :: Snaplet Sqlite
+               , _roundDAO :: Snaplet Sqlite
+               , _scoreDAO :: Snaplet Sqlite
+               , _solutionDAO :: Snaplet Sqlite
                }
 
 makeLenses ''App
 
 -- | Provides a HasSqlite instance for this module.
 instance HasSqlite (Handler b App) where
-    getSqliteState = with playerDb get
+    getSqliteState = with playerDAO get

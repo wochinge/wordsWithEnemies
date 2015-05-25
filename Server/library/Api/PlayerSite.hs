@@ -10,9 +10,6 @@ import 			 Types.Player
 import 			 Snap.Core
 import 			 Snap.Snaplet
 import 			 Snap.Snaplet.SqliteSimple
-import 			 Snap.Util.FileServe
-import 			 Snap.Snaplet.Auth
-import 			 Snap.Snaplet.Auth.Backends.SqliteSimple
 import 			 DB.PlayerDAO
 import 			 DB.Dictionary
 import 			 Api.PlayerApp
@@ -28,7 +25,7 @@ import           Control.Monad.Trans
 import           Control.Monad
 
 -- | Defines, which handler is used for which http call and route.
-routes :: [(B.ByteString, Handler App PlayerApp())]   -- ^ route, handler for this route and http call
+routes :: [(B.ByteString, Handler App PlayerApp ())]   -- ^ route, handler for this route and http call
 routes = [ (""          , method POST createPlayer)
          , (":id/status", method GET  getStatus)
          ]
@@ -42,11 +39,11 @@ apiInit = makeSnaplet "playerApi" "handles users" Nothing $ do
 -- | Handler, which takes care of creating players.   
 createPlayer :: Handler App PlayerApp () -- ^ nothing
 createPlayer = do
-    body <- readRequestBody 2048
+    player <- getJSONBody
     setStatusCode 201
-    dBResult <- withTop playerDb (savePlayer $ decodeBody body)
+    dBResult <- withTop playerDAO (savePlayer player)
     setBody $ dBResult
-    waitingPlayers <- withTop playerDb getTwoWaitingPlayers
+    waitingPlayers <- withTop playerDAO getTwoWaitingPlayers
     if length waitingPlayers > 1
         then do 
             createGame waitingPlayers
@@ -59,8 +56,8 @@ createGame players = do
     letters <- withTop dictionary getRandomWord
     random <- shuffle letters
     let game = Game Nothing players False [Round Nothing Nothing random Nothing []]
-    game <- withTop gameDb $ insertGame game
-    withTop playerDb $ dropFromQueue players
+    game <- withTop gameDAO $ insertGame game
+    withTop playerDAO $ dropFromQueue players
     liftIO $ putStrLn $ show game
     return ()
 
@@ -76,10 +73,9 @@ fac n = product [n, n-1 .. 1]
 -- | Handler, which provides information for a player whether a opponent was found.
 getStatus :: Handler App PlayerApp () -- ^ nothing
 getStatus = do
-    idAsByteString <- getParam $ B.pack "id"
-    let userId = read $ B.unpack $ fromJust idAsByteString
+    userId <- getIdParam "id"
     liftIO $ putStrLn $ show userId
-    game <- withTop gameDb $ getGameWithPlayer userId
+    game <- withTop gameDAO $ getGameWithPlayer userId
     liftIO $ putStrLn $ show game
     when (isJust game) $ setBody $ fromJust game
     setStatusCode 200

@@ -4,7 +4,8 @@
 module Snap.PrettySnap 
 ( setStatusCode
 , setBody
-, decodeBody
+, getIdParam
+, getJSONBody
 ) where
 
 import 			 Data.Aeson
@@ -12,6 +13,7 @@ import 			 Data.Maybe
 import 			 Snap.Core
 import 			 Snap.Snaplet
 import qualified Data.ByteString.Lazy as B
+import qualified Data.ByteString.Char8 as B_Char
 
 -- | Sets the status code of the server response.
 setStatusCode :: MonadSnap m 
@@ -37,3 +39,18 @@ decodeBody :: FromJSON a
            => B.ByteString -- ^ body 
            -> a            -- ^ decoded data
 decodeBody body = fromJust $ decode body
+
+-- | Gets an id from the url params.
+getIdParam :: MonadSnap m 
+		   => String    -- ^ url param identifier
+		   -> m Integer -- ^ id
+getIdParam param = do
+	bytestring <- getParam $ B_Char.pack param
+	return $ read $ B_Char.unpack $ fromJust bytestring
+
+-- | Gets a json object from a request body.
+getJSONBody :: (MonadSnap m, FromJSON a) 
+			=> m a --  ^ decoded JSON body
+getJSONBody = do
+	body <- readRequestBody 2048
+	return $ decodeBody body
