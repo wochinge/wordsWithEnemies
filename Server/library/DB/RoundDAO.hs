@@ -6,6 +6,7 @@ module DB.RoundDAO
 ( DB.RoundDAO.createTables
 , getRounds
 , insertRound
+, getRound
 ) where
 
 import qualified Database.SQLite.Simple as SQL
@@ -60,6 +61,18 @@ getRounds gameId = do
     results <- query "SELECT * FROM round WHERE game_id = ?" (Only (gameId))
     mapM buildRound results
 
+-- | Returns round by id.
+getRound :: DatabaseId                 -- ^ database id of the round
+          -> Handler App Sqlite (Maybe R.Round) -- ^ round
+getRound roundId = do
+    result <- query "SELECT * FROM round WHERE round_id = ?" (Only (roundId))
+    if (null result)
+        then 
+            return Nothing
+        else do
+           round <- buildRound $ head result
+           return $ Just round
+    
 -- | Builds one single round out of a the database row.
 buildRound :: RoundDAO        -- ^ dao which represents a row in the db
            -> Handler App Sqlite R.Round -- ^ normal round object
