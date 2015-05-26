@@ -1,1 +1,0 @@
-Mix "test-suite/Spec.hs" 2015-05-13 09:23:18 UTC 240095759 8 [(7:15-7:16,ExpBox False),(7:8-7:16,ExpBox False),(7:1-7:16,TopLevelBox ["spec"]),(5:14-5:17,ExpBox False),(5:8-5:17,ExpBox False),(5:1-5:17,TopLevelBox ["main"])]

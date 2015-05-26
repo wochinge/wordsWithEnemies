@@ -78,8 +78,8 @@ saveScore roundId (Solution _  letters1 player1) (Solution _ letters2 player2)
 
 deleteFromText :: String -> String -> String
 deleteFromText _ [] = []
-deleteFromText (x:xs) text =
-    deleteFromText xs $ delete x text 
+deleteFromText [] text = text
+deleteFromText (x:xs) text = deleteFromText xs $ delete x text 
 
 
 

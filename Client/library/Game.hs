@@ -1,14 +1,15 @@
 module Game where 
 
-import System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
-import System.Exit (exitSuccess)
-import Network.PlayerClient
-import Network.GameClient
-import Data.Maybe
-import GHC.Conc
-import Types.Player
-import Types.Game
-import Types.Round
+import           System.IO (BufferMode (NoBuffering), hSetBuffering, stdout)
+import           System.Exit (exitSuccess)
+import           Network.PlayerClient
+import           Network.GameClient
+import           Data.Maybe
+import           GHC.Conc
+import           Types.Player
+import           Types.Game
+import           Types.Round
+import qualified Types.Solution as S
 
 welcomeMessage :: String
 welcomeMessage = "Welcome to Words with Enemies\n\n \
@@ -16,7 +17,7 @@ welcomeMessage = "Welcome to Words with Enemies\n\n \
                  \[s]: Start game \t [h]: Help \t [q]: Quit"
 
 waitingMessage :: String
-waitingMessage = "Searching for a Teammate"
+waitingMessage = "Searching for a Teammate ..."
 
 play :: IO ()
 play = do 
@@ -81,15 +82,15 @@ startGame :: Player -> Game -> IO ()
 startGame self game = do
     let teammate = name $ head $ filter (/= self) (player game)
     putStrLn $ teammateMessage ++ teammate
-    playRound game
+    playRound self game
 
 lettersMessage :: String
 lettersMessage = "Please form a word out of the following letters"
 
-playRound :: Game -> IO ()
-playRound game = do
+playRound :: Player -> Game -> IO ()
+playRound self game = do
     putStrLn lettersMessage
     let round = head $ rounds game
     putStrLn $ letters round
-    solution <- getLine
-    postSolution solution game
+    userSolution <- getLine
+    postSolution (S.Solution Nothing userSolution self) game
