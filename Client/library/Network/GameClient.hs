@@ -23,7 +23,7 @@ postSolution solution game = do
         gId = show $ fromJust $ gameId game
 
 getGameWithNewRound :: Round -> Game -> IO (Maybe Game)
-getGameWithNewRound lastRound game = get' (?) 
+getGameWithNewRound lastRound game = get' (server ++ "game/" ++ gId ++ "/round/newRound/" ++ rNr) 
 	where 
         rNr = show $ fromJust $ roundNr lastRound
         gId = show $ fromJust $ gameId game

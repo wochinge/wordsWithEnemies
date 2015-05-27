@@ -89,8 +89,9 @@ lettersMessage = "Please form a word out of the following letters"
 
 playRound :: Player -> Game -> IO ()
 playRound self game = do
+    let maxRoundNr = maximum $ map roundNr $ rounds game
+    let round = head $ filter (\round -> roundNr round == maxRoundNr) $ rounds game
     putStrLn lettersMessage
-    let round = head $ rounds game
     putStrLn $ letters round
     userSolution <- getLine
     postSolution (S.Solution Nothing userSolution self) game
@@ -104,4 +105,4 @@ loopForRound lastRound game = do
         then do 
             threadDelay 1000000
             loopForRound lastRound game
-    else return $ fromJust newGame
+        else return $ fromJust newGame
