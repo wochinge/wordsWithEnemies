@@ -7,7 +7,6 @@ module Api.GameSite
 ) where
 
 import 			 Snap.PrettySnap
-import 			 Data.Aeson
 import qualified Data.ByteString.Char8 as B
 import 			 Types.Player
 import 			 Snap.Core
@@ -15,22 +14,22 @@ import 			 Snap.Snaplet
 import 			 Snap.Snaplet.SqliteSimple
 import           Application
 import           Api.GameApp
+import           Data.List (delete)
+import           DB.GameDAO (getGame, insertGame)
+import           DB.Dictionary (wordExists, getRandomWord)
+import           DB.ScoreDAO (insertScore)
+import           DB.RoundDAO (insertRound, getRound)
+import           DB.SolutionDAO (insertSolution, getSolutions)
+import           DB.PlayerDAO (dropFromQueue)
+import           Control.Monad.Trans
+import           Control.Monad
+import           Data.Maybe (fromJust, isJust)
+import           System.Random (getStdGen, randomR)
+import           Data.List (permutations)
+import           Types.Game
 import           Types.Score
 import           Types.Solution
 import           Types.Round
-import           Data.List (delete)
-import           DB.GameDAO
-import           DB.Dictionary
-import           DB.ScoreDAO
-import           DB.RoundDAO
-import           DB.SolutionDAO (insertSolution, getSolutions)
-import           Control.Monad.Trans
-import           Control.Monad
-import           Data.Maybe
-import           System.Random
-import           Data.List
-import           Types.Game
-import           DB.PlayerDAO (dropFromQueue)
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App GameApp ())]   -- ^ route, handler for this route and http call
@@ -55,14 +54,12 @@ createSolution :: Handler App GameApp () -- ^ nothing
 createSolution = do
     roundId <- getIdParam "roundId"
     round <- withTop roundDAO $ getRound roundId
-    let task = letters $ fromJust round
 
     playerSolution <- getJSONBody
     setStatusCode 201
+    
     solutionExists <- withTop dictionary $ wordExists $ solution playerSolution
-
-    let cleanSolution = deleteFromText task $ solution playerSolution
-    let solutionFitsLetters = (length cleanSolution) == 0
+    let solutionFitsLetters = doesSolutionFitLetters playerSolution $ fromJust round
 
     if (solutionExists && solutionFitsLetters)
         then
@@ -75,7 +72,14 @@ createSolution = do
         saveScore roundId (head solutions) (last solutions)
         gameId <- getIdParam "id"
         createRound gameId
-        
+
+doesSolutionFitLetters :: Solution -> Round -> Bool
+doesSolutionFitLetters (Solution _ solutionText _) round =
+    length cleanSolution == 0
+    where 
+        cleanSolution = deleteFromText challengeText solutionText
+        challengeText = letters round
+
 saveScore :: Integer -> Solution -> Solution -> Handler App GameApp ()
 saveScore roundId (Solution _  letters1 player1) (Solution _ letters2 player2) 
     | letters1L > letters2L = withTop scoreDAO $ insertScore roundId $ Score Nothing (letters1L - letters2L) player1
