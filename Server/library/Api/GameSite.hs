@@ -6,7 +6,7 @@ module Api.GameSite
 , createGame
 ) where
 
-import 			 Snap.PrettySnap
+import 			 Snap.PrettySnap (setStatusCode, setBody, getJSONBody, getIdParam)
 import qualified Data.ByteString.Char8 as B
 import 			 Types.Player
 import 			 Snap.Core
@@ -43,6 +43,7 @@ apiInit = makeSnaplet "game api" "handles games" Nothing $ do
     addRoutes routes
     return GameApp
 
+-- | Returns the game for the id.
 retrieveGame :: Handler App GameApp () -- ^ nothing
 retrieveGame = do
     gameId <- getIdParam "id"
@@ -50,6 +51,9 @@ retrieveGame = do
     when (isJust game) $ setBody game
     setStatusCode 200
 
+-- | Inserts a user solution in the database.
+-- | Depending whether both players posted a solution, the score is calculated and
+-- | a new round is created.
 createSolution :: Handler App GameApp () -- ^ nothing
 createSolution = do
     roundId <- getIdParam "roundId"
@@ -73,6 +77,9 @@ createSolution = do
         gameId <- getIdParam "id"
         createRound gameId
 
+-- | Checks whether the solution is made out of the letters of the challenge.
+-- | E.g. "house" is a valid word, but cannot be build out of the the letters of "slat" (salt).
+-- | But "ice" can be built out of the challenge letters "icecream".
 doesSolutionFitLetters :: Solution -> Round -> Bool
 doesSolutionFitLetters (Solution _ solutionText _) round =
     length cleanSolution == 0
@@ -80,7 +87,11 @@ doesSolutionFitLetters (Solution _ solutionText _) round =
         cleanSolution = deleteFromText challengeText solutionText
         challengeText = letters round
 
-saveScore :: Integer -> Solution -> Solution -> Handler App GameApp ()
+-- | Calculates the score and saves it in the db.
+saveScore :: Integer  -- ^ databaseId of the round
+          -> Solution -- ^ Solution of player1
+          -> Solution -- ^ Solution of player2
+          -> Handler App GameApp ()
 saveScore roundId (Solution _  letters1 player1) (Solution _ letters2 player2) 
     | letters1L > letters2L = withTop scoreDAO $ insertScore roundId $ Score Nothing (letters1L - letters2L) player1
     | letters1L < letters2L= withTop scoreDAO $ insertScore roundId $ Score Nothing (letters2L - letters1L) player2
@@ -89,7 +100,10 @@ saveScore roundId (Solution _  letters1 player1) (Solution _ letters2 player2)
         letters1L = length letters1
         letters2L = length letters2
 
-deleteFromText :: String -> String -> String
+-- | Deletes all letters from the challenge word in the solution word. 
+deleteFromText :: String -- ^ challenge word
+               -> String -- ^ solution word
+               -> String -- ^ hopefully empty word
 deleteFromText _ [] = []
 deleteFromText [] text = text
 deleteFromText (x:xs) text = deleteFromText xs $ delete x text 
@@ -103,21 +117,28 @@ createGame players = do
     withTop playerDAO $ dropFromQueue players
     createRound $ fromJust $ gameId game
     liftIO $ putStrLn $ show game
-    
-createRound :: Integer -> Handler App GameApp ()
+
+-- | Creates a new round.
+createRound :: Integer                -- ^ databaseId of the game
+            -> Handler App GameApp () -- ^ nothing
 createRound gameId = do
     letters <- withTop dictionary getRandomWord
     random <- shuffle letters
     let newRound = Round Nothing Nothing random Nothing []
     withTop roundDAO $ insertRound gameId newRound
-    
-shuffle :: String -> Handler App GameApp String 
+
+-- | Shuffles a string randomly.
+shuffle :: String                     -- ^ input string
+        -> Handler App GameApp String -- ^ shuffled string
 shuffle xs = do
     gen <- liftIO getStdGen
     let (permNum, newGen) = randomR (1, fac (length xs) -1) gen
     return $ permutations xs !! permNum
 
-fac :: (Enum a, Num a) => a -> a
+-- | Faculty method to calculate the possible permutations.
+fac :: (Enum a, Num a) 
+    => a -- ^ number
+    -> a -- ^ faculty of the number.
 fac n = product [n, n-1 .. 1]
 
 
