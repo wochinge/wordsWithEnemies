@@ -17,12 +17,11 @@ import 			 Data.Maybe
 import 			 Application
 import           DB.Dictionary
 import           DB.GameDAO
-import           System.Random
 import           Types.Game
 import           Types.Round
-import           Data.List
 import           Control.Monad.Trans
 import           Control.Monad
+import           Api.GameSite (createGame)
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App PlayerApp ())]   -- ^ route, handler for this route and http call
@@ -46,29 +45,8 @@ createPlayer = do
     waitingPlayers <- withTop playerDAO getTwoWaitingPlayers
     if length waitingPlayers > 1
         then do 
-            createGame waitingPlayers
+            withTop gameSnaplet $ createGame waitingPlayers
         else return ()
-        
--- | Creates a game with two waiting players and a first round.       
-createGame :: [Player]                 -- ^ two waiting players
-           -> Handler App PlayerApp () -- ^ nothing
-createGame players = do
-    letters <- withTop dictionary getRandomWord
-    random <- shuffle letters
-    let game = Game Nothing players False [Round Nothing Nothing random Nothing []]
-    game <- withTop gameDAO $ insertGame game
-    withTop playerDAO $ dropFromQueue players
-    liftIO $ putStrLn $ show game
-    return ()
-
-shuffle :: String -> Handler App PlayerApp String 
-shuffle xs = do
-    gen <- liftIO getStdGen
-    let (permNum, newGen) = randomR (1, fac (length xs) -1) gen
-    return $ permutations xs !! permNum
-
-fac :: (Enum a, Num a) => a -> a
-fac n = product [n, n-1 .. 1]
 
 -- | Handler, which provides information for a player whether a opponent was found.
 getStatus :: Handler App PlayerApp () -- ^ nothing

@@ -20,7 +20,7 @@ import           Application
 import qualified Data.Text as T
 import           DB.Utils
 import           Control.Monad
-import 			 Control.Applicative
+import           Control.Applicative
 import           Types.Score
 import qualified Types.Round as R
 import           Types.Solution

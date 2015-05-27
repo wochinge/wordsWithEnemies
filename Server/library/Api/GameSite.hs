@@ -1,7 +1,10 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Snaplet, which offers API functions to deal with games.
-module Api.GameSite (apiInit) where
+module Api.GameSite 
+( apiInit
+, createGame
+) where
 
 import 			 Snap.PrettySnap
 import 			 Data.Aeson
@@ -24,6 +27,10 @@ import           DB.SolutionDAO (insertSolution, getSolutions)
 import           Control.Monad.Trans
 import           Control.Monad
 import           Data.Maybe
+import           System.Random
+import           Data.List
+import           Types.Game
+import           DB.PlayerDAO (dropFromQueue)
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App GameApp ())]   -- ^ route, handler for this route and http call
@@ -66,7 +73,9 @@ createSolution = do
     solutions <- withTop solutionDAO $ getSolutions roundId
     when ((length solutions) == 2) $ do
         saveScore roundId (head solutions) (last solutions)
-
+        gameId <- getIdParam "id"
+        createRound gameId
+        
 saveScore :: Integer -> Solution -> Solution -> Handler App GameApp ()
 saveScore roundId (Solution _  letters1 player1) (Solution _ letters2 player2) 
     | letters1L > letters2L = withTop scoreDAO $ insertScore roundId $ Score Nothing (letters1L - letters2L) player1
@@ -81,6 +90,30 @@ deleteFromText _ [] = []
 deleteFromText [] text = text
 deleteFromText (x:xs) text = deleteFromText xs $ delete x text 
 
+-- | Creates a game with two waiting players and a first round.       
+createGame :: [Player]                 -- ^ two waiting players
+           -> Handler App GameApp () -- ^ nothing
+createGame players = do
+    let game = Game Nothing players False []
+    game <- withTop gameDAO $ insertGame game
+    withTop playerDAO $ dropFromQueue players
+    createRound $ fromJust $ gameId game
+    liftIO $ putStrLn $ show game
+    
+createRound :: Integer -> Handler App GameApp ()
+createRound gameId = do
+    letters <- withTop dictionary getRandomWord
+    random <- shuffle letters
+    let newRound = Round Nothing Nothing random Nothing []
+    withTop roundDAO $ insertRound gameId newRound
+    
+shuffle :: String -> Handler App GameApp String 
+shuffle xs = do
+    gen <- liftIO getStdGen
+    let (permNum, newGen) = randomR (1, fac (length xs) -1) gen
+    return $ permutations xs !! permNum
 
+fac :: (Enum a, Num a) => a -> a
+fac n = product [n, n-1 .. 1]
 
 
