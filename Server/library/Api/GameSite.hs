@@ -35,6 +35,7 @@ import           Types.Round
 routes :: [(B.ByteString, Handler App GameApp ())]   -- ^ route, handler for this route and http call
 routes = [ (":id", method GET retrieveGame)
          , (":id/round/:roundId/solution", method POST createSolution)
+         , (":id/round/newRound/:oldRoundNr/", method GET retrieveNewRound)
          ]
          
 -- | Initializes the snaplet.         
@@ -49,6 +50,17 @@ retrieveGame = do
     gameId <- getIdParam "id"
     game <- withTop gameDAO $ getGame gameId
     when (isJust game) $ setBody game
+    setStatusCode 200
+    
+-- | Returns Game with new Round if new Round
+retrieveNewRound :: Handler App GameApp () -- ^ nothing
+retrieveNewRound = do
+    gameId <- getIdParam "id"
+    game <- withTop gameDAO $ getGame gameId
+    when (isJust game) $ do
+        oldRoundNr <- getIdParam "oldRoundNr"
+        let newRound = filter (\round -> (fromJust $ roundNr round) > oldRoundNr) $ rounds $ fromJust game 
+        when (newRound /= []) $ setBody game
     setStatusCode 200
 
 -- | Inserts a user solution in the database.

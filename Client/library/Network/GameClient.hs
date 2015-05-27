@@ -25,5 +25,5 @@ postSolution solution game = do
 getGameWithNewRound :: Round -> Game -> IO (Maybe Game)
 getGameWithNewRound lastRound game = get' (?) 
 	where 
-        rId = show $ fromJust $ roundId lastRound
+        rNr = show $ fromJust $ roundNr lastRound
         gId = show $ fromJust $ gameId game
