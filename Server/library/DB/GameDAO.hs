@@ -80,10 +80,15 @@ buildGame dao = do
 getGameWithPlayer :: DatabaseId                        -- ^ Id of the player
                   -> Handler App Sqlite (Maybe G.Game) -- ^ A game if the players has one, else Nothing
 getGameWithPlayer playerId = do
-    results <- query "SELECT game_id FROM game WHERE (player1_id = ? OR player2_id = ?) AND status = ?" (playerId, playerId, False)
-    case results of
-      [] -> return Nothing
-      [Only id] -> getGame id 
+    results <- query "SELECT * FROM game WHERE (player1_id = ? OR player2_id = ?) AND status = ?" (playerId, playerId, False)
+    if (null results)
+        then 
+            return Nothing
+        else do
+            rounds <- withTop roundDAO $ RoundDb.getRounds $ gameid $ head results 
+            case rounds of
+                [] -> return Nothing
+                _ -> getGame $ gameid $ head results
 
 -- | Inserts a game into the datebase.                 
 insertGame :: G.Game                    -- ^ the game to insert
