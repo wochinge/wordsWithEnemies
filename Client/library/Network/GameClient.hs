@@ -21,3 +21,9 @@ postSolution solution game = do
     where 
         rId = show $ fromJust $ roundId $ last $ rounds game
         gId = show $ fromJust $ gameId game
+
+getGameWithNewRound :: Round -> Game -> IO (Maybe Game)
+getGameWithNewRound lastRound game = get' (?) 
+	where 
+        rId = show $ fromJust $ roundId lastRound
+        gId = show $ fromJust $ gameId game

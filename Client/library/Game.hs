@@ -94,3 +94,14 @@ playRound self game = do
     putStrLn $ letters round
     userSolution <- getLine
     postSolution (S.Solution Nothing userSolution self) game
+    newGame <- loopForRound round game
+    playRound self newGame
+
+loopForRound :: Round -> Game -> IO Game
+loopForRound lastRound game = do 
+    newGame <- getGameWithNewRound lastRound game
+    if (isNothing newGame)
+        then do 
+            threadDelay 1000000
+            loopForRound lastRound game
+    else return $ fromJust newGame
