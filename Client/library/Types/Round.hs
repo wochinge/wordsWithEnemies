@@ -11,7 +11,7 @@ import           Types.Solution
 
 data Round = Round { roundId :: Maybe Integer
                    , roundNr :: Maybe Integer
-                   , letters :: [Char]
+                   , letters :: String
                    , roundScore :: Maybe Score
                    , solutions :: [Solution]
                    } deriving (Show, Eq)
