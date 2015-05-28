@@ -14,7 +14,6 @@ import qualified Data.Text as T
 import           Application
 import           DB.Utils
 import qualified Data.List as L
-import qualified Data.ByteString.Char8 as B
 
 -- | Creates the dictionary table and fills it with the words from the text file.
 createTables :: S.Connection -- ^ database connection
@@ -36,8 +35,8 @@ createTables conn = do
 -- | Reads the words from a text file.
 readWords :: IO [String] -- ^ list of words (words are lowercase, for a later not case sensitive use)
 readWords = do
-    words <- B.readFile "wordlist.txt"
-    let wordList = map B.unpack $ B.lines $ words
+    words <- readFile "wordlist.txt"
+    let wordList = lines $ words
     return $ map (T.unpack . T.toLower . T.pack) wordList
 
 -- | Filters the words, because word version with "'" are not wanted.
