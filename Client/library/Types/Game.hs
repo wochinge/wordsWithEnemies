@@ -4,10 +4,8 @@
 -- | Module for the model game.
 module Types.Game where
 
-import 			 Data.Aeson
 import 			 Data.Aeson.TH
 import 			 Types.Player
-import 			 Types.Score
 import 			 Types.Round
 
 data Game = Game { gameId :: Maybe Integer -- ID kann auch leer sein

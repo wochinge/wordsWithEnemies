@@ -12,7 +12,6 @@ import Network.Wreq
 import Data.ByteString.Lazy
 import Data.Aeson
 import Control.Lens
-import Data.Maybe
 
 server :: String 
 server = "http://localhost:9000/"
@@ -23,7 +22,7 @@ put' :: ToJSON a
      -> a -- ^ the new value, which must have the ability to be parsed to a JSON
      -> IO () -- response is not needed
 put' url content = do
-    put url parsedContent
+    _ <- put url parsedContent
     return ()
     where parsedContent = toJSON content
     

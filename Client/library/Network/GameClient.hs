@@ -16,7 +16,7 @@ getStatus player = get' (server ++ "player/" ++ id ++ "/status")
           
 postSolution :: Solution -> Game -> IO ()
 postSolution solution game = do
-    post' (server ++ "game/" ++ gId ++ "/round/" ++ rId ++ "/solution") solution
+    _ <- post' (server ++ "game/" ++ gId ++ "/round/" ++ rId ++ "/solution") solution
     return ()
     where 
         rId = show $ fromJust $ roundId $ last $ rounds game

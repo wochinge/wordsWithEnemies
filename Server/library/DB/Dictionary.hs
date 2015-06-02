@@ -5,7 +5,6 @@
 -- | common english words. 
 module DB.Dictionary (createTables, wordExists, getRandomWord) where
 
-import           Control.Applicative
 import           Control.Monad
 import qualified Database.SQLite.Simple as S
 import           Snap.Snaplet

@@ -11,7 +11,6 @@ import qualified Data.ByteString.Char8 as B
 import 			 Types.Player
 import 			 Snap.Core
 import 			 Snap.Snaplet
-import 			 Snap.Snaplet.SqliteSimple
 import           Application
 import           Api.GameApp
 import           Data.List (delete)
@@ -144,7 +143,7 @@ shuffle :: String                     -- ^ input string
         -> Handler App GameApp String -- ^ shuffled string
 shuffle xs = do
     gen <- liftIO getStdGen
-    let (permNum, newGen) = randomR (1, fac (length xs) -1) gen
+    let (permNum, _) = randomR (1, fac (length xs) -1) gen
     return $ permutations xs !! permNum
 
 -- | Faculty method to calculate the possible permutations.

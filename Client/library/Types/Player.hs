@@ -4,7 +4,6 @@
 -- | Module for the model player.
 module Types.Player where
 
-import           Data.Aeson
 import 			 Data.Aeson.TH
 
 data Player = Player { playerId :: Maybe Integer -- ID kann auch leer sein

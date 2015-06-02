@@ -8,10 +8,8 @@ module DB.Utils
 , DatabaseId
 ) where
 
-import           Control.Applicative
 import           Control.Monad
 import qualified Database.SQLite.Simple as S
-import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
 import           Data.Text
 

@@ -4,7 +4,6 @@
 -- | Module for the model player.
 module Types.Player where
 
-import           Data.Aeson
 import 			 Data.Aeson.TH
 import 			 Control.Applicative
 import           Database.SQLite.Simple

@@ -4,7 +4,6 @@
 -- | Module for the model score.
 module Types.Score where
 
-import 			 Data.Aeson
 import 			 Data.Aeson.TH
 import 			 Types.Player
 

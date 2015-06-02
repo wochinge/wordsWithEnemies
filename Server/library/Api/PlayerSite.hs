@@ -4,21 +4,14 @@
 module Api.PlayerSite (apiInit) where
 
 import 			 Snap.PrettySnap
-import 			 Data.Aeson
 import qualified Data.ByteString.Char8 as B
-import 			 Types.Player
 import 			 Snap.Core
 import 			 Snap.Snaplet
-import 			 Snap.Snaplet.SqliteSimple
 import 			 DB.PlayerDAO
-import 			 DB.Dictionary
 import 			 Api.PlayerApp
 import 			 Data.Maybe
 import 			 Application
-import           DB.Dictionary
 import           DB.GameDAO
-import           Types.Game
-import           Types.Round
 import           Control.Monad.Trans
 import           Control.Monad
 import           Api.GameSite (createGame)

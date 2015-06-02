@@ -4,7 +4,6 @@
 -- | Module for the model solution.
 module Types.Solution where
 
-import 			 Data.Aeson
 import 			 Data.Aeson.TH
 import 			 Types.Player
 

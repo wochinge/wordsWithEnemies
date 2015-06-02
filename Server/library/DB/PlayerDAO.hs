@@ -11,8 +11,6 @@ module DB.PlayerDAO
 , dropFromQueue
 ) where
 
-import           Control.Applicative
-import           Control.Monad
 import qualified Database.SQLite.Simple as S
 import           Snap.Snaplet.SqliteSimple
 import           Snap.Snaplet
@@ -77,5 +75,4 @@ getTwoWaitingPlayers = do
 
 dropFromQueue :: [Player] -> Handler App Sqlite ()
 dropFromQueue players = do
-    mapM (\p -> execute "DELETE FROM queue WHERE waiting_player = ?" (Only (playerId p))) players
-    return ()
+    mapM_ (\p -> execute "DELETE FROM queue WHERE waiting_player = ?" (Only (playerId p))) players

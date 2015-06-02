@@ -10,7 +10,6 @@ module DB.GameDAO
 ) where
 
 import 			 Control.Applicative
-import           Control.Monad
 import qualified Database.SQLite.Simple as SQL
 import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
@@ -22,7 +21,6 @@ import qualified Types.Game as G
 import qualified Types.Player as P
 import qualified DB.RoundDAO as RoundDb
 import qualified DB.PlayerDAO as PlayerDb
-import           Types.Score
 import           Data.Maybe
 
 -- | Represents one row of the table game.

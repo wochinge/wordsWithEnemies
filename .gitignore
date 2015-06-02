@@ -22,3 +22,7 @@
 
 # HPC
 */.hpc/
+
+# IntelliJ
+*/*.iml
+*/.idea/

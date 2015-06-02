@@ -5,7 +5,6 @@
 module Site (initApplication) where
 
 import           Application
-import           Snap.Core
 import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
 import           Control.Monad.Trans (liftIO)

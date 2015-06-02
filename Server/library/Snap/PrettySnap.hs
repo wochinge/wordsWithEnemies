@@ -11,7 +11,6 @@ module Snap.PrettySnap
 import 			 Data.Aeson
 import 			 Data.Maybe
 import 			 Snap.Core
-import 			 Snap.Snaplet
 import qualified Data.ByteString.Lazy as B
 import qualified Data.ByteString.Char8 as B_Char
 

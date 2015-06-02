@@ -5,7 +5,7 @@ import           System.Exit (exitSuccess)
 import           Network.PlayerClient
 import           Network.GameClient
 import           Data.Maybe
-import           GHC.Conc
+import           GHC.Conc (threadDelay)
 import           Types.Player
 import           Types.Game
 import           Types.Round

@@ -11,7 +11,6 @@ module DB.RoundDAO
 
 import qualified Database.SQLite.Simple as SQL
 import           Data.Maybe
-import qualified Types.Round as R
 import           DB.ScoreDAO
 import           DB.SolutionDAO
 import           Snap.Snaplet.SqliteSimple
