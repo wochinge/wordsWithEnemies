@@ -29,9 +29,9 @@ setJSONHeader = modifyResponse header
 setBody :: (ToJSON a, MonadSnap m) 
         => a -- ^ object which should be sent. Needs method toJSON to convert object to a JSON
         -> m ()
-setBody object = do
+setBody bodyObject = do
     setJSONHeader
-    writeLBS . encode $ object
+    writeLBS . encode $ bodyObject
 
 -- | Decodes JSON body back to data.
 decodeBody :: FromJSON a 

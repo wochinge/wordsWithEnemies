@@ -65,20 +65,17 @@ getRound :: DatabaseId                 -- ^ database id of the round
           -> Handler App Sqlite (Maybe R.Round) -- ^ round
 getRound roundId = do
     result <- query "SELECT * FROM round WHERE round_id = ?" (Only (roundId))
-    if (null result)
-        then 
-            return Nothing
-        else do
-           round <- buildRound $ head result
-           return $ Just round
+    case result of
+        [resultRound] -> fmap Just $ buildRound resultRound
+        _ -> return Nothing
     
 -- | Builds one single round out of a the database row.
 buildRound :: RoundDAO        -- ^ dao which represents a row in the db
            -> Handler App Sqlite R.Round -- ^ normal round object
 buildRound dao = do
-    score <- getScore $ roundid dao
+    roundScore <- getScore $ roundid dao
     solutions <- getSolutions $ roundid dao
-    return $ parseRound dao score solutions
+    return $ parseRound dao roundScore solutions
 
 -- | Inserts a round in the database.
 insertRound :: DatabaseId            -- ^ database id of the game of the round
@@ -90,5 +87,5 @@ insertRound gameId newRound = do
     inserted <- query "SELECT * FROM round WHERE round_nr = (SELECT MAX(round_nr) FROM round where game_id = ?)" (Only (gameId))
     let roundId = roundid $ head inserted
     mapM_ (\s -> insertSolution roundId s) $ R.solutions newRound
-    let score = R.roundScore newRound
-    when (isJust score) $ insertScore roundId (fromJust score)
+    let roundScore = R.roundScore newRound
+    when (isJust roundScore) $ insertScore roundId (fromJust roundScore)

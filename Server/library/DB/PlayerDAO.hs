@@ -39,9 +39,9 @@ createTables conn = do
 -- | Saves a player to the database.                 
 savePlayer :: Player                    -- ^ player to insert
            -> Handler App Sqlite Player -- ^ inserted player including id
-savePlayer (Player _ name) = do
-    execute "INSERT INTO player (nickname) VALUES (?)" (Only (name))
-    result <- query "SELECT * FROM player WHERE player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (Only (name))
+savePlayer (Player _ nickname) = do
+    execute "INSERT INTO player (nickname) VALUES (?)" (Only (nickname))
+    result <- query "SELECT * FROM player WHERE player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (Only (nickname))
     let savedPlayer = head result
     insertWaitingPlayer $ fromJust $ playerId savedPlayer
     return savedPlayer
@@ -49,8 +49,8 @@ savePlayer (Player _ name) = do
 -- | Gets a player with a specific id from the database.
 getPlayer :: DatabaseId                 -- ^ id of the player
           -> Handler App Sqlite (Maybe Player)  -- ^ wanted player
-getPlayer id = do
-    result <- query "SELECT * FROM player WHERE player_id = ?" (Only (id))
+getPlayer idOfPlayer = do
+    result <- query "SELECT * FROM player WHERE player_id = ?" (Only (idOfPlayer))
     let player = head result
     if null result
         then do

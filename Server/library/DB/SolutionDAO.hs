@@ -51,7 +51,7 @@ createTables conn = do
                  ]
 
 -- | Returns solutions of round.                 
-getSolutions :: DatabaseId                    -- ^ database id of the round
+getSolutions :: DatabaseId                      -- ^ database id of the round
              -> Handler App Sqlite [S.Solution] -- ^ 0 to 2 solutions
 getSolutions roundId = do
     results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only (roundId))
@@ -60,7 +60,7 @@ getSolutions roundId = do
 
 -- | Inserts a solution in the database.
 insertSolution :: DatabaseId            -- ^ database id of the round
-               -> S.Solution              -- ^ Solution to insert
+               -> S.Solution            -- ^ Solution to insert
                -> Handler App Sqlite () -- ^ nothing
 insertSolution roundId newSolution = do
     let values = (S.solution newSolution, P.playerId $ S.player newSolution, roundId)

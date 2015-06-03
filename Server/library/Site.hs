@@ -25,18 +25,18 @@ initApplication :: SnapletInit App App -- ^ Snaplet initializer
 initApplication = makeSnaplet "wordsWithEnemies" "Web api for Words with Enemies" Nothing $ do
     player <- nestSnaplet "player" playerSnaplet apiInit
     game <- nestSnaplet "game" gameSnaplet G.apiInit
-    playerDAO <- nestSnaplet "playerDAO" playerDAO sqliteInit
-    dictionary <- nestSnaplet "dictionary" dictionary sqliteInit
-    gameDAO <- nestSnaplet "gameDAO" gameDAO sqliteInit
-    roundDAO <- nestSnaplet "roundDAO" roundDAO sqliteInit
-    solutionDAO <- nestSnaplet "solutionDAO" solutionDAO sqliteInit
-    scoreDAO <- nestSnaplet "scoreDAO" scoreDAO sqliteInit
+    playerSnap <- nestSnaplet "playerDAO" playerDAO sqliteInit
+    dictionarySnap <- nestSnaplet "dictionary" dictionary sqliteInit
+    gameSnap <- nestSnaplet "gameDAO" gameDAO sqliteInit
+    roundSnap <- nestSnaplet "roundDAO" roundDAO sqliteInit
+    solutionSnap <- nestSnaplet "solutionDAO" solutionDAO sqliteInit
+    scoreSnap <- nestSnaplet "scoreDAO" scoreDAO sqliteInit
     
-    let c = sqliteConn $ playerDAO ^# snapletValue
+    let c = sqliteConn $ playerSnap ^# snapletValue
     liftIO $ withMVar c $ \conn -> P_DAO.createTables conn
     liftIO $ withMVar c $ \conn -> Dict.createTables conn
     liftIO $ withMVar c $ \conn -> G_DAO.createTables conn
     liftIO $ withMVar c $ \conn -> R_DAO.createTables conn
     liftIO $ withMVar c $ \conn -> Sc_DAO.createTables conn
     liftIO $ withMVar c $ \conn -> Sol_DAO.createTables conn
-    return $ App player game playerDAO dictionary gameDAO roundDAO scoreDAO solutionDAO
+    return $ App player game playerSnap dictionarySnap gameSnap roundSnap scoreSnap solutionSnap
