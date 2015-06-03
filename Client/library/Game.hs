@@ -10,6 +10,7 @@ import           Types.Player
 import           Types.Game
 import           Types.Round
 import qualified Types.Solution as S
+import qualified Types.Score as Score
 
 welcomeMessage :: String
 welcomeMessage = "Welcome to Words with Enemies\n\n \
@@ -87,16 +88,33 @@ startGame self game = do
 lettersMessage :: String
 lettersMessage = "Please form a word out of the following letters"
 
+maxRoundNr :: Game -> Integer
+maxRoundNr game = maximum $ map (\round -> fromJust $ roundNr round) $ rounds game
+
 playRound :: Player -> Game -> IO ()
 playRound self game = do
-    let maxRoundNr = maximum $ map roundNr $ rounds game
-    let round = head $ filter (\round -> roundNr round == maxRoundNr) $ rounds game
+    let round = head $ filter (\round -> (fromJust $ roundNr round) == (maxRoundNr game)) $ rounds game
     putStrLn lettersMessage
     putStrLn $ letters round
     userSolution <- getLine
     postSolution (S.Solution Nothing userSolution self) game
     newGame <- loopForRound round game
-    playRound self newGame
+    let lastRound = head $ filter (\round -> (fromJust $ roundNr round) == ((maxRoundNr newGame)-1)) $ rounds newGame
+    if (iDidWin self lastRound)
+        then
+            putStrLn $ "You won! You scored " ++ (scoreRound lastRound) ++ " points."
+        else
+            putStrLn $ "I'm sorry, you lost. Your teammate scored " ++ (scoreRound lastRound) ++ " points."
+    putStrLn $ "Your total score is now " ++ myTotalScore self newGame
+    putStrLn $ "The totalscore of you teammate is now " ++ teammateTotalScore self newGame
+    if (status newGame == False)
+        then 
+            playRound self newGame
+        else do
+            putStrLn "This is the end of the game. Thanks for playing! Want to go again?"
+            play
+            
+            
 
 loopForRound :: Round -> Game -> IO Game
 loopForRound lastRound game = do 
@@ -106,3 +124,21 @@ loopForRound lastRound game = do
             threadDelay 1000000
             loopForRound lastRound game
         else return $ fromJust newGame
+        
+iDidWin :: Player -> Round -> Bool
+iDidWin self round =  
+    (Score.player $ fromJust $ roundScore round) == self
+
+scoreRound :: Round -> String
+scoreRound round = 
+    show $ Score.score $ fromJust $ roundScore round
+    
+myTotalScore :: Player -> Game -> String
+myTotalScore self game = 
+    show $ foldl (+) 0 wonScores
+     where wonScores = map (\round -> if ((Score.player $ fromJust $ roundScore round) == self) then Score.score $ fromJust $ roundScore round else 0) $ rounds game
+
+teammateTotalScore :: Player -> Game -> String
+teammateTotalScore self game = 
+    show $ foldl (+) 0 wonScores
+    where wonScores = map (\round -> if ((Score.player $ fromJust $ roundScore round) /= self) then Score.score $ fromJust $ roundScore round else 0) $ rounds game
