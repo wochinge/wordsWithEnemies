@@ -124,7 +124,8 @@ loopForRound lastRound game = do
             threadDelay 1000000
             loopForRound lastRound game
         else return $ fromJust newGame
-        
+ 
+-- | Dritten Fall noch berücksichtigen -> Gleichstand
 iDidWin :: Player -> Round -> Bool
 iDidWin self round =  
     (Score.player $ fromJust $ roundScore round) == self
@@ -136,9 +137,13 @@ scoreRound round =
 myTotalScore :: Player -> Game -> String
 myTotalScore self game = 
     show $ foldl (+) 0 wonScores
-     where wonScores = map (\round -> if ((Score.player $ fromJust $ roundScore round) == self) then Score.score $ fromJust $ roundScore round else 0) $ rounds game
+     where 
+        roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
+        wonScores = map (\round -> if ((Score.player $ fromJust $ roundScore round) == self) then Score.score $ fromJust $ roundScore round else 0) $ roundWithScore
 
 teammateTotalScore :: Player -> Game -> String
 teammateTotalScore self game = 
     show $ foldl (+) 0 wonScores
-    where wonScores = map (\round -> if ((Score.player $ fromJust $ roundScore round) /= self) then Score.score $ fromJust $ roundScore round else 0) $ rounds game
+    where 
+        roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
+        wonScores = map (\round -> if ((Score.player $ fromJust $ roundScore round) /= self) then Score.score $ fromJust $ roundScore round else 0) $ roundWithScore
