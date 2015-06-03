@@ -7,6 +7,7 @@ module DB.GameDAO
 , insertGame
 , getGame
 , getGameWithPlayer
+, updateGameStatus
 ) where
 
 import 			 Control.Applicative
@@ -101,3 +102,11 @@ insertGame game = do
     execute_ "COMMIT"
     insertedGame <- getGame id
     return $ fromJust insertedGame
+
+-- | Updates a gameobject. Usually used when a game is finished.
+updateGameStatus :: DatabaseId            -- ^ id of the game which should be updated
+                 -> Bool                  -- ^ new status of the game
+                 -> Handler App Sqlite () -- ^ nothing
+updateGameStatus gameId newStatus = do
+    let values = (newStatus, gameId)
+    execute "UPDATE game SET status = ? WHERE game_id = ?" values

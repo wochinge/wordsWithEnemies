@@ -14,7 +14,7 @@ import 			 Snap.Snaplet
 import           Application
 import           Api.GameApp
 import           Data.List (delete)
-import           DB.GameDAO (getGame, insertGame)
+import           DB.GameDAO (getGame, insertGame, updateGameStatus)
 import           DB.Dictionary (wordExists, getRandomWord)
 import           DB.ScoreDAO (insertScore)
 import           DB.RoundDAO (insertRound, getRound)
@@ -46,19 +46,19 @@ apiInit = makeSnaplet "game api" "handles games" Nothing $ do
 -- | Returns the game for the id.
 retrieveGame :: Handler App GameApp () -- ^ nothing
 retrieveGame = do
-    gameId <- getIdParam "id"
-    game <- withTop gameDAO $ getGame gameId
+    requestedGameId <- getIdParam "id"
+    game <- withTop gameDAO $ getGame requestedGameId
     when (isJust game) $ setBody game
     setStatusCode 200
     
 -- | Returns Game with new Round if new Round
 retrieveNewRound :: Handler App GameApp () -- ^ nothing
 retrieveNewRound = do
-    gameId <- getIdParam "id"
-    game <- withTop gameDAO $ getGame gameId
+    requestedGameId <- getIdParam "id"
+    game <- withTop gameDAO $ getGame requestedGameId
     when (isJust game) $ do
         oldRoundNr <- getIdParam "oldRoundNr"
-        let newRound = filter (\round -> (fromJust $ roundNr round) > oldRoundNr) $ rounds $ fromJust game 
+        let newRound = filter (\r -> (fromJust $ roundNr r) > oldRoundNr) $ rounds $ fromJust game
         when (newRound /= []) $ setBody game
     setStatusCode 200
 
@@ -67,45 +67,50 @@ retrieveNewRound = do
 -- | a new round is created.
 createSolution :: Handler App GameApp () -- ^ nothing
 createSolution = do
-    roundId <- getIdParam "roundId"
-    round <- withTop roundDAO $ getRound roundId
+    solvedRoundId <- getIdParam "roundId"
+    Just solvedRound <- withTop roundDAO $ getRound solvedRoundId
 
     playerSolution <- getJSONBody
     setStatusCode 201
     
     solutionExists <- withTop dictionary $ wordExists $ solution playerSolution
-    let solutionFitsLetters = doesSolutionFitLetters playerSolution $ fromJust round
+    let solutionFitsLetters = doesSolutionFitLetters playerSolution solvedRound
 
     if (solutionExists && solutionFitsLetters)
         then
-            withTop solutionDAO $ insertSolution roundId playerSolution
+            withTop solutionDAO $ insertSolution solvedRoundId playerSolution
         else
-            withTop solutionDAO $ insertSolution roundId $ playerSolution {solution = ""}
+            withTop solutionDAO $ insertSolution solvedRoundId $ playerSolution {solution = ""}
     
-    solutions <- withTop solutionDAO $ getSolutions roundId
-    when ((length solutions) == 2) $ do
-        saveScore roundId (head solutions) (last solutions)
-        gameId <- getIdParam "id"
-        createRound gameId
+    roundSolutions <- withTop solutionDAO $ getSolutions solvedRoundId
+    when ((length roundSolutions) == 2) $ do
+        saveScore solvedRoundId (head roundSolutions) (last roundSolutions)
+        currentGameId <- getIdParam "id"
+        Just game <- withTop gameDAO $ getGame currentGameId
+        if lastRoundPlayed game
+            then
+                withTop gameDAO $ updateGameStatus currentGameId True
+            else
+                createRound currentGameId
 
 -- | Checks whether the solution is made out of the letters of the challenge.
 -- | E.g. "house" is a valid word, but cannot be build out of the the letters of "slat" (salt).
 -- | But "ice" can be built out of the challenge letters "icecream".
 doesSolutionFitLetters :: Solution -> Round -> Bool
-doesSolutionFitLetters (Solution _ solutionText _) round =
+doesSolutionFitLetters (Solution _ solutionText _) playedRound =
     length cleanSolution == 0
     where 
         cleanSolution = deleteFromText challengeText solutionText
-        challengeText = letters round
+        challengeText = letters playedRound
 
 -- | Calculates the score and saves it in the db.
 saveScore :: Integer  -- ^ databaseId of the round
           -> Solution -- ^ Solution of player1
           -> Solution -- ^ Solution of player2
           -> Handler App GameApp ()
-saveScore roundId (Solution _  letters1 player1) (Solution _ letters2 player2) 
-    | letters1L > letters2L = withTop scoreDAO $ insertScore roundId $ Score Nothing (letters1L - letters2L) player1
-    | letters1L < letters2L= withTop scoreDAO $ insertScore roundId $ Score Nothing (letters2L - letters1L) player2
+saveScore playedRoundId (Solution _  letters1 player1) (Solution _ letters2 player2)
+    | letters1L > letters2L = withTop scoreDAO $ insertScore playedRoundId $ Score Nothing (letters1L - letters2L) player1
+    | letters1L < letters2L= withTop scoreDAO $ insertScore playedRoundId $ Score Nothing (letters2L - letters1L) player2
     | otherwise = return ()
     where
         letters1L = length letters1
@@ -124,19 +129,19 @@ createGame :: [Player]                 -- ^ two waiting players
            -> Handler App GameApp () -- ^ nothing
 createGame players = do
     let game = Game Nothing players False []
-    game <- withTop gameDAO $ insertGame game
+    insertedGame <- withTop gameDAO $ insertGame game
     withTop playerDAO $ dropFromQueue players
-    createRound $ fromJust $ gameId game
-    liftIO $ putStrLn $ show game
+    createRound $ fromJust $ gameId insertedGame
+    liftIO $ putStrLn $ show insertedGame
 
 -- | Creates a new round.
 createRound :: Integer                -- ^ databaseId of the game
             -> Handler App GameApp () -- ^ nothing
-createRound gameId = do
-    letters <- withTop dictionary getRandomWord
-    random <- shuffle letters
+createRound gameIdOfRound = do
+    challengeLetters <- withTop dictionary getRandomWord
+    random <- shuffle challengeLetters
     let newRound = Round Nothing Nothing random Nothing []
-    withTop roundDAO $ insertRound gameId newRound
+    withTop roundDAO $ insertRound gameIdOfRound newRound
 
 -- | Shuffles a string randomly.
 shuffle :: String                     -- ^ input string
@@ -152,4 +157,9 @@ fac :: (Enum a, Num a)
     -> a -- ^ faculty of the number.
 fac n = product [n, n-1 .. 1]
 
+-- | Detects whether the game is finished (= 5 rounds played).
+lastRoundPlayed :: Game -- ^ gameId
+                -> Bool    -- ^ True if lastRound is played, false if more round have to be played
+lastRoundPlayed game =
+    (length $ rounds game) == 5
 
