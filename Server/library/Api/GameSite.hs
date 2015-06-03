@@ -72,7 +72,7 @@ createSolution = do
 
     playerSolution <- getJSONBody
     setStatusCode 201
-    
+
     solutionExists <- withTop dictionary $ wordExists $ solution playerSolution
     let solutionFitsLetters = doesSolutionFitLetters playerSolution solvedRound
 
@@ -81,7 +81,7 @@ createSolution = do
             withTop solutionDAO $ insertSolution solvedRoundId playerSolution
         else
             withTop solutionDAO $ insertSolution solvedRoundId $ playerSolution {solution = ""}
-    
+
     roundSolutions <- withTop solutionDAO $ getSolutions solvedRoundId
     when ((length roundSolutions) == 2) $ do
         saveScore solvedRoundId (head roundSolutions) (last roundSolutions)

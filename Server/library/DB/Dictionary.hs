@@ -28,8 +28,9 @@ createTables conn = do
     unless schemaCreated $ do
       words <- readWords
       mapM_ (insertWord conn) $ filteredWords words
-    
     S.execute_ conn "COMMIT"
+    S.execute_ conn "PRAGMA journal_mode=WAL"
+
 
 -- | Reads the words from a text file.
 readWords :: IO [String] -- ^ list of words (words are lowercase, for a later not case sensitive use)
