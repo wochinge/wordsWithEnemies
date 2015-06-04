@@ -87,11 +87,8 @@ createSolution = do
         saveScore solvedRoundId (head roundSolutions) (last roundSolutions)
         currentGameId <- getIdParam "id"
         Just game <- withTop gameDAO $ getGame currentGameId
-        if lastRoundPlayed game
-            then
-                withTop gameDAO $ updateGameStatus currentGameId True
-            else
-                createRound currentGameId
+        when (lastRoundPlayed game) $ withTop gameDAO $ updateGameStatus currentGameId True
+        createRound currentGameId
 
 -- | Checks whether the solution is made out of the letters of the challenge.
 -- | E.g. "house" is a valid word, but cannot be build out of the the letters of "slat" (salt).
