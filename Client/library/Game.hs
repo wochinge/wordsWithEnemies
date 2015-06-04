@@ -100,11 +100,11 @@ playRound self game = do
     postSolution (S.Solution Nothing userSolution self) game
     newGame <- loopForRound round game
     let lastRound = head $ filter (\round -> (fromJust $ roundNr round) == ((maxRoundNr newGame)-1)) $ rounds newGame
-    if (iDidWin self lastRound)
-        then
-            putStrLn $ "You won! You scored " ++ (scoreRound lastRound) ++ " points."
-        else
-            putStrLn $ "I'm sorry, you lost. Your teammate scored " ++ (scoreRound lastRound) ++ " points."
+    case (roundScore lastRound) of
+        Nothing -> putStrLn $ "Oh it's a tie!"
+        Just (Score.Score _ points player) -> if (player == self)
+                                                   then putStrLn $ "You won! You scored " ++ (show points) ++ " points."
+                                                   else putStrLn $ "I'm sorry, you lost. Your teammate scored " ++ (show points) ++ " points."
     putStrLn $ "Your total score is now " ++ myTotalScore self newGame
     putStrLn $ "The totalscore of you teammate is now " ++ teammateTotalScore self newGame
     if (status newGame == False)
@@ -113,8 +113,6 @@ playRound self game = do
         else do
             putStrLn "This is the end of the game. Thanks for playing! Want to go again?"
             play
-            
-            
 
 loopForRound :: Round -> Game -> IO Game
 loopForRound lastRound game = do 
@@ -125,11 +123,6 @@ loopForRound lastRound game = do
             loopForRound lastRound game
         else return $ fromJust newGame
  
--- | Dritten Fall noch berücksichtigen -> Gleichstand
-iDidWin :: Player -> Round -> Bool
-iDidWin self round =  
-    (Score.player $ fromJust $ roundScore round) == self
-
 scoreRound :: Round -> String
 scoreRound round = 
     show $ Score.score $ fromJust $ roundScore round
