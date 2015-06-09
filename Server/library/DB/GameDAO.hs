@@ -70,14 +70,14 @@ getGame gameId = do
 buildGame :: GameDAO        -- ^ dao which represents a row in the db
            -> Handler App Sqlite G.Game -- ^ normal game object
 buildGame dao = do
-    player1 <- PlayerDb.getPlayer $ player1id dao
-    player2 <- PlayerDb.getPlayer $ player2id dao
+    Just player1 <- PlayerDb.getPlayer $ player1id dao
+    Just player2 <- PlayerDb.getPlayer $ player2id dao
     rounds  <- RoundDb.getRounds $ gameid dao
-    return $ parseGame dao [fromJust player1, fromJust player2] rounds
+    return $ parseGame dao [player1, player2] rounds
 
 -- | Returns a running game of a specific player.
 getGameWithPlayer :: DatabaseId                        -- ^ Id of the player
-                  -> Handler App Sqlite (Maybe G.Game) -- ^ A game if the players has one, else Nothing
+                  -> Handler App Sqlite (Maybe G.Game) -- ^ A game if the players has one and there a rounds for the game, else Nothing
 getGameWithPlayer playerId = do
     results <- query "SELECT * FROM game WHERE (player1_id = ? OR player2_id = ?) AND status = ?" (playerId, playerId, False)
     if (null results)
@@ -96,12 +96,12 @@ insertGame game = do
     let values = (P.playerId $ head $ G.player game, P.playerId $ last $ G.player game, G.status game)
     execute_ "BEGIN"
     execute "INSERT INTO game (player1_id, player2_id, status) VALUES (?, ?, ?)" values
-    inserted <- query_ "SELECT * FROM game ORDER BY game_id DESC LIMIT 1"
-    let id = gameid $ head inserted
+    [inserted] <- query_ "SELECT * FROM game ORDER BY game_id DESC LIMIT 1"
+    let id = gameid inserted
     mapM_ (RoundDb.insertRound id) $ G.rounds game
     execute_ "COMMIT"
-    insertedGame <- getGame id
-    return $ fromJust insertedGame
+    Just insertedGame <- getGame id
+    return insertedGame
 
 -- | Updates a gameobject. Usually used when a game is finished.
 updateGameStatus :: DatabaseId            -- ^ id of the game which should be updated

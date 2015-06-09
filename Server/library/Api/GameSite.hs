@@ -28,6 +28,7 @@ import           Types.Game
 import           Types.Score
 import           Types.Solution
 import           Types.Round
+import qualified Data.Foldable as F
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App GameApp ())]   -- ^ route, handler for this route and http call
@@ -47,7 +48,7 @@ retrieveGame :: Handler App GameApp () -- ^ nothing
 retrieveGame = do
     requestedGameId <- getIdParam "id"
     game <- withTop gameDAO $ getGame requestedGameId
-    when (isJust game) $ setBody game
+    F.mapM_ setBody game
     setStatusCode 200
     
 -- | Returns Game with new Round if new Round

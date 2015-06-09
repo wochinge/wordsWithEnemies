@@ -65,5 +65,5 @@ wordExists word = do
 -- | The word must have a length of >=5, so that there are enough letters to build new words.
 getRandomWord :: Handler App Sqlite String -- ^ random word
 getRandomWord = do
-    result <- query_ "SELECT word FROM dictionary WHERE LENGTH(word) >= 5 ORDER BY RANDOM() LIMIT 1"
-    return $ fromOnly $ head result
+    [Only (result)] <- query_ "SELECT word FROM dictionary WHERE LENGTH(word) >= 5 ORDER BY RANDOM() LIMIT 1"
+    return result

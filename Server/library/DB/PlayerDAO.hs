@@ -19,6 +19,7 @@ import           Types.Player
 import           DB.Utils
 import           Application
 import           Data.Maybe
+import qualified Data.Foldable as F
 
 -- | Creates the player and the queue table.
 createTables :: S.Connection -- ^ database connection
@@ -41,9 +42,8 @@ savePlayer :: Player                    -- ^ player to insert
            -> Handler App Sqlite Player -- ^ inserted player including id
 savePlayer (Player _ nickname) = do
     execute "INSERT INTO player (nickname) VALUES (?)" (Only (nickname))
-    result <- query "SELECT * FROM player WHERE player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (Only (nickname))
-    let savedPlayer = head result
-    insertWaitingPlayer $ fromJust $ playerId savedPlayer
+    [savedPlayer] <- query "SELECT * FROM player WHERE player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (Only (nickname))
+    F.mapM_ insertWaitingPlayer $ playerId savedPlayer
     return savedPlayer
 
 -- | Gets a player with a specific id from the database.
@@ -51,11 +51,9 @@ getPlayer :: DatabaseId                 -- ^ id of the player
           -> Handler App Sqlite (Maybe Player)  -- ^ wanted player
 getPlayer idOfPlayer = do
     result <- query "SELECT * FROM player WHERE player_id = ?" (Only (idOfPlayer))
-    let player = head result
-    if null result
-        then do
-           return Nothing
-        else return $ Just player
+    case result of 
+        [] -> return Nothing
+        [p] -> return $ Just p
 
 -- | Inserts a player in the waiting queue.
 insertWaitingPlayer :: DatabaseId            -- ^ Id of the waiting player

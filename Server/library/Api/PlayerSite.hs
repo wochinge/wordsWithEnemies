@@ -48,5 +48,4 @@ getStatus = do
     game <- withTop gameDAO $ getGameWithPlayer userId
     liftIO $ print game
     F.mapM_ setBody game
-    --when (isJust game) $ setBody $ fromJust game
     setStatusCode 200
