@@ -15,6 +15,7 @@ import           DB.GameDAO
 import           Control.Monad.Trans
 import           Control.Monad
 import           Api.GameSite (createGame)
+import qualified Data.Foldable as F
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App PlayerApp ())]   -- ^ route, handler for this route and http call
@@ -36,7 +37,7 @@ createPlayer = do
     dBResult <- withTop playerDAO (savePlayer player)
     setBody dBResult
     waitingPlayers <- withTop playerDAO getTwoWaitingPlayers
-    when (length waitingPlayers > 1)
+    when (length waitingPlayers > 1) $
         withTop gameSnaplet $ createGame waitingPlayers
 
 -- | Handler, which provides information for a player whether a opponent was found.
@@ -46,5 +47,6 @@ getStatus = do
     liftIO $ print userId
     game <- withTop gameDAO $ getGameWithPlayer userId
     liftIO $ print game
-    when (isJust game) $ setBody $ fromJust game
+    F.mapM_ setBody game
+    --when (isJust game) $ setBody $ fromJust game
     setStatusCode 200
