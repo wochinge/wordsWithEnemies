@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
--- | A module which offers more readable method calls.
+-- | A module which offers more readable method calls for the snap framework.
 module Snap.PrettySnap 
 ( setStatusCode
 , setBody
@@ -8,17 +8,17 @@ module Snap.PrettySnap
 , getJSONBody
 ) where
 
-import 			 Data.Aeson
-import 			 Data.Maybe
-import 			 Snap.Core
+import 			 Data.Aeson (encode, decode, FromJSON, ToJSON)
+import 			 Data.Maybe (fromJust)
+import 			 Snap.Core (modifyResponse, setResponseCode, writeLBS, setHeader, getParam, readRequestBody, MonadSnap)
 import qualified Data.ByteString.Lazy as B
-import qualified Data.ByteString.Char8 as B_Char
+import qualified Data.ByteString.Char8 as B_Char (pack, unpack)
 
 -- | Sets the status code of the server response.
 setStatusCode :: MonadSnap m 
               => Int -- ^ Status code of the response
               -> m ()
-setStatusCode code = modifyResponse . setResponseCode $ code
+setStatusCode = modifyResponse . setResponseCode
 
 -- | Sets the content-type of the answer to application/json
 setJSONHeader :: MonadSnap m => m ()
@@ -37,7 +37,7 @@ setBody bodyObject = do
 decodeBody :: FromJSON a 
            => B.ByteString -- ^ body 
            -> a            -- ^ decoded data
-decodeBody body = fromJust $ decode body
+decodeBody = fromJust . decode
 
 -- | Gets an id from the url params.
 getIdParam :: MonadSnap m 
