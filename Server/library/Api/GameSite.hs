@@ -13,7 +13,7 @@ import 			 Snap.Core
 import 			 Snap.Snaplet
 import           Application
 import           Api.GameApp
-import           Data.List (delete)
+import           Data.List (delete, permutations)
 import           DB.GameDAO (getGame, insertGame, updateGameStatus)
 import           DB.Dictionary (wordExists, getRandomWord)
 import           DB.ScoreDAO (insertScore)
@@ -24,7 +24,6 @@ import           Control.Monad.Trans
 import           Control.Monad
 import           Data.Maybe (fromJust, isJust)
 import           System.Random (getStdGen, randomR)
-import           Data.List (permutations)
 import           Types.Game
 import           Types.Score
 import           Types.Solution
@@ -58,7 +57,7 @@ retrieveNewRound = do
     game <- withTop gameDAO $ getGame requestedGameId
     when (isJust game) $ do
         oldRoundNr <- getIdParam "oldRoundNr"
-        let newRound = filter (\r -> (fromJust $ roundNr r) > oldRoundNr) $ rounds $ fromJust game
+        let newRound = filter (\r -> fromJust (roundNr r) > oldRoundNr) $ rounds $ fromJust game
         when (newRound /= []) $ setBody game
     setStatusCode 200
 
@@ -76,14 +75,14 @@ createSolution = do
     solutionExists <- withTop dictionary $ wordExists $ solution playerSolution
     let solutionFitsLetters = doesSolutionFitLetters playerSolution solvedRound
 
-    if (solutionExists && solutionFitsLetters)
+    if solutionExists && solutionFitsLetters
         then
             withTop solutionDAO $ insertSolution solvedRoundId playerSolution
         else
             withTop solutionDAO $ insertSolution solvedRoundId $ playerSolution {solution = ""}
 
     roundSolutions <- withTop solutionDAO $ getSolutions solvedRoundId
-    when ((length roundSolutions) == 2) $ do
+    when (length roundSolutions == 2) $ do
         saveScore solvedRoundId (head roundSolutions) (last roundSolutions)
         currentGameId <- getIdParam "id"
         Just game <- withTop gameDAO $ getGame currentGameId
@@ -129,7 +128,7 @@ createGame players = do
     insertedGame <- withTop gameDAO $ insertGame game
     withTop playerDAO $ dropFromQueue players
     createRound $ fromJust $ gameId insertedGame
-    liftIO $ putStrLn $ show insertedGame
+    liftIO $ print insertedGame
 
 -- | Creates a new round.
 createRound :: Integer                -- ^ databaseId of the game
@@ -158,5 +157,5 @@ fac n = product [n, n-1 .. 1]
 lastRoundPlayed :: Game -- ^ gameId
                 -> Bool    -- ^ True if lastRound is played, false if more round have to be played
 lastRoundPlayed game =
-    (length $ rounds game) == 5
+    length (rounds game) == 5
 

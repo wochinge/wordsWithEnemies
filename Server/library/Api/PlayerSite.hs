@@ -34,19 +34,17 @@ createPlayer = do
     player <- getJSONBody
     setStatusCode 201
     dBResult <- withTop playerDAO (savePlayer player)
-    setBody $ dBResult
+    setBody dBResult
     waitingPlayers <- withTop playerDAO getTwoWaitingPlayers
-    if length waitingPlayers > 1
-        then do 
-            withTop gameSnaplet $ createGame waitingPlayers
-        else return ()
+    when (length waitingPlayers > 1)
+        withTop gameSnaplet $ createGame waitingPlayers
 
 -- | Handler, which provides information for a player whether a opponent was found.
 getStatus :: Handler App PlayerApp () -- ^ nothing
 getStatus = do
     userId <- getIdParam "id"
-    liftIO $ putStrLn $ show userId
+    liftIO $ print userId
     game <- withTop gameDAO $ getGameWithPlayer userId
-    liftIO $ putStrLn $ show game
+    liftIO $ print game
     when (isJust game) $ setBody $ fromJust game
     setStatusCode 200
