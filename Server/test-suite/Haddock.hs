@@ -17,7 +17,7 @@ main = do
     output <- readProcess "cabal" ["haddock"] ""
     if average (match output) >= expected
         then exitSuccess
-        else putStr output >> exitSuccess -- TODO: Wieder umändern auf exitFailure
+        else putStr output >> exitFailure
 
 match :: String -> [Int]
 match = fmap read . concat . catMaybes . fmap (matchRegex pattern) . lines
