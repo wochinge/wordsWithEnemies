@@ -95,7 +95,7 @@ createSolution = do
 -- | But "ice" can be built out of the challenge letters "icecream".
 doesSolutionFitLetters :: Solution -> Round -> Bool
 doesSolutionFitLetters (Solution _ solutionText _) playedRound =
-    length cleanSolution == 0
+    null cleanSolution
     where 
         cleanSolution = deleteFromText challengeText solutionText
         challengeText = letters playedRound

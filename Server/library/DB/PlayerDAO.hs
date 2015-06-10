@@ -1,5 +1,4 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell   #-}
 
 -- | Module, which provides database operations for players.
 module DB.PlayerDAO
@@ -41,8 +40,8 @@ createTables conn = do
 savePlayer :: Player                    -- ^ player to insert
            -> Handler App Sqlite Player -- ^ inserted player including id
 savePlayer (Player _ nickname) = do
-    execute "INSERT INTO player (nickname) VALUES (?)" (Only (nickname))
-    [savedPlayer] <- query "SELECT * FROM player WHERE player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (Only (nickname))
+    execute "INSERT INTO player (nickname) VALUES (?)" (Only nickname)
+    [savedPlayer] <- query "SELECT * FROM player WHERE player_id = (SELECT max(player_id) FROM player WHERE nickname = ?)" (Only nickname)
     F.mapM_ insertWaitingPlayer $ playerId savedPlayer
     return savedPlayer
 
@@ -50,7 +49,7 @@ savePlayer (Player _ nickname) = do
 getPlayer :: DatabaseId                 -- ^ id of the player
           -> Handler App Sqlite (Maybe Player)  -- ^ wanted player
 getPlayer idOfPlayer = do
-    result <- query "SELECT * FROM player WHERE player_id = ?" (Only (idOfPlayer))
+    result <- query "SELECT * FROM player WHERE player_id = ?" (Only idOfPlayer)
     case result of 
         [] -> return Nothing
         [p] -> return $ Just p
@@ -59,7 +58,7 @@ getPlayer idOfPlayer = do
 insertWaitingPlayer :: DatabaseId            -- ^ Id of the waiting player
                     -> Handler App Sqlite () -- ^ Nothing
 insertWaitingPlayer player_id = 
-    execute "INSERT INTO queue (waiting_player) VALUES (?)" (Only (player_id))
+    execute "INSERT INTO queue (waiting_player) VALUES (?)" (Only player_id)
 
 -- | Returns a maximum of two player out of the waiting queue.
 -- | Take care: Can also be less then two players.
@@ -69,8 +68,8 @@ getTwoWaitingPlayers = do
     players <- mapM getPlayer $ extracted result
     return $ map fromJust players
     where 
-      extracted listOfOnlys= map fromOnly listOfOnlys
+      extracted = map fromOnly
 
 dropFromQueue :: [Player] -> Handler App Sqlite ()
-dropFromQueue players = do
-    mapM_ (\p -> execute "DELETE FROM queue WHERE waiting_player = ?" (Only (playerId p))) players
+dropFromQueue =
+    mapM_ (\p -> execute "DELETE FROM queue WHERE waiting_player = ?" (Only (playerId p)))

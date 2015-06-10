@@ -23,6 +23,7 @@ import           Control.Applicative
 import           Types.Score
 import qualified Types.Round as R
 import           Types.Solution
+import qualified Data.Foldable as DF
 
 -- | Represents a database row of the table round.
 data RoundDAO = RoundDAO { roundid :: DatabaseId
@@ -39,12 +40,12 @@ parseRound :: RoundDAO    -- ^ round database row
            -> Maybe Score -- ^ score of round
            -> [Solution]  -- ^ solutions to a round
            -> R.Round     -- ^ round model
-parseRound dao winnerScore solutions = R.Round (Just $ roundid dao) (Just $ roundnr dao) (letters dao) winnerScore solutions
+parseRound dao = R.Round (Just $ roundid dao) (Just $ roundnr dao) (letters dao)
 
 -- | Creates the round table.
 createTables :: SQL.Connection -- ^ database connection
              -> IO ()        -- ^ nothing
-createTables conn = do
+createTables conn =
     createTable conn "round" $
         T.concat [ "CREATE TABLE round ("
                  , "round_id INTEGER PRIMARY KEY, "
@@ -57,16 +58,16 @@ createTables conn = do
 getRounds :: DatabaseId                 -- ^ database id of the game
           -> Handler App Sqlite [R.Round] -- ^ rounds of the game
 getRounds gameId = do
-    results <- query "SELECT * FROM round WHERE game_id = ?" (Only (gameId))
+    results <- query "SELECT * FROM round WHERE game_id = ?" (Only gameId)
     mapM buildRound results
 
 -- | Returns round by id.
 getRound :: DatabaseId                 -- ^ database id of the round
           -> Handler App Sqlite (Maybe R.Round) -- ^ round
 getRound roundId = do
-    result <- query "SELECT * FROM round WHERE round_id = ?" (Only (roundId))
+    result <- query "SELECT * FROM round WHERE round_id = ?" (Only roundId)
     case result of
-        [resultRound] -> fmap Just $ buildRound resultRound
+        [resultRound] -> Just <$> buildRound resultRound
         _ -> return Nothing
     
 -- | Builds one single round out of a the database row.
@@ -84,8 +85,8 @@ insertRound :: DatabaseId            -- ^ database id of the game of the round
 insertRound gameId newRound = do
     let values = (gameId, gameId, R.letters newRound)
     execute "INSERT INTO round (round_nr, game_id, letters) VALUES ((SELECT IFNULL(MAX(round_nr), 0) + 1 FROM round WHERE game_id = ?), ?, ?)" values
-    inserted <- query "SELECT * FROM round WHERE round_nr = (SELECT MAX(round_nr) FROM round where game_id = ?)" (Only (gameId))
+    inserted <- query "SELECT * FROM round WHERE round_nr = (SELECT MAX(round_nr) FROM round where game_id = ?)" (Only gameId)
     let roundId = roundid $ head inserted
     mapM_ (\s -> insertSolution roundId s) $ R.solutions newRound
     let roundScore = R.roundScore newRound
-    when (isJust roundScore) $ insertScore roundId (fromJust roundScore)
+    DF.forM_ roundScore (insertScore roundId)

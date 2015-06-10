@@ -39,12 +39,12 @@ parseGame :: GameDAO    -- ^ database row
           -> [P.Player] -- ^ players of the game
           -> [Round]    -- ^ rounds of a game
           -> G.Game     -- ^ pretty game object
-parseGame game players rounds = G.Game (Just $ gameid game) players (status game) rounds
+parseGame game players = G.Game (Just $ gameid game) players (status game)
 
 -- | Creates the Game table.
 createTables :: SQL.Connection -- ^ database connection
              -> IO ()          -- ^ nothing
-createTables conn = do
+createTables conn =
     createTable conn "game" $
         T.concat [ "CREATE TABLE game ("
                  , "game_id INTEGER PRIMARY KEY, "
@@ -59,12 +59,12 @@ createTables conn = do
 getGame :: DatabaseId                    -- ^ database id of the game
              -> Handler App Sqlite (Maybe G.Game)
 getGame gameId = do
-    results <- query "SELECT * FROM game WHERE game_id = ? LIMIT 2" (Only (gameId))
+    results <- query "SELECT * FROM game WHERE game_id = ? LIMIT 2" (Only gameId)
     let game = head results
     if null results
-        then do
+        then
             return Nothing
-        else fmap Just $ buildGame game
+        else Just <$> buildGame game
 
  -- | Builds one single game out of a the database row.
 buildGame :: GameDAO        -- ^ dao which represents a row in the db
@@ -80,7 +80,7 @@ getGameWithPlayer :: DatabaseId                        -- ^ Id of the player
                   -> Handler App Sqlite (Maybe G.Game) -- ^ A game if the players has one and there a rounds for the game, else Nothing
 getGameWithPlayer playerId = do
     results <- query "SELECT * FROM game WHERE (player1_id = ? OR player2_id = ?) AND status = ?" (playerId, playerId, False)
-    if (null results)
+    if null results
         then 
             return Nothing
         else do

@@ -34,12 +34,12 @@ instance FromRow ScoreDAO where
 parseScore :: ScoreDAO -- ^ score database row
            -> P.Player -- ^ player of the score
            -> S.Score  -- ^ score object
-parseScore score player = S.Score (Just $ scoreid score) (roundScore score) player
+parseScore score = S.Score (Just $ scoreid score) (roundScore score)
 
 -- | Creates score table.
 createTables :: SQL.Connection -- ^ database connection
              -> IO ()          -- ^ nothing
-createTables conn = do
+createTables conn =
     createTable conn "roundscore" $
         T.concat [ "CREATE TABLE roundscore ("
                  , "score_id INTEGER PRIMARY KEY, "
@@ -54,7 +54,7 @@ createTables conn = do
 getScore :: DatabaseId                       -- ^ id of the round
          -> Handler App Sqlite (Maybe S.Score) -- ^ Score of the round or nothing
 getScore roundId = do
-    results <- query "SELECT * FROM roundscore WHERE round_id = ? LIMIT 1" (Only (roundId))
+    results <- query "SELECT * FROM roundscore WHERE round_id = ? LIMIT 1" (Only roundId)
     case results of 
         [] -> return Nothing
         [score] -> do

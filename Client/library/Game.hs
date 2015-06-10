@@ -25,7 +25,7 @@ play = do
     hSetBuffering stdout NoBuffering
     putStrLn welcomeMessage
     option <- getLine
-    handleOption (option)
+    handleOption option
 
 handleOption :: String -> IO ()
 handleOption option
@@ -58,7 +58,7 @@ handleNickname name
         enterName
     | otherwise = do
         player <- createPlayer name
-        putStrLn $ show player
+        print player
         checkForGame $ fromJust player
 
 checkForGame :: Player -> IO ()
@@ -70,11 +70,11 @@ checkForGame player = do
 loopForGame :: Player -> IO Game
 loopForGame player = do 
     game <- getStatus player
-    if (isNothing game)
-        then do 
-            threadDelay 1000000
-            loopForGame player
-    else return $ fromJust game
+    maybe
+        (do threadDelay 1000000
+            loopForGame player)
+        return
+        game
  
 teammateMessage :: String
 teammateMessage = "Your Teammate is "
@@ -93,21 +93,21 @@ maxRoundNr game = maximum $ map (\round -> fromJust $ roundNr round) $ rounds ga
 
 playRound :: Player -> Game -> IO ()
 playRound self game = do
-    let round = head $ filter (\round -> (fromJust $ roundNr round) == (maxRoundNr game)) $ rounds game
+    let round = head $ filter (\round -> fromJust (roundNr round) == maxRoundNr game) $ rounds game
     putStrLn lettersMessage
     putStrLn $ letters round
     userSolution <- getLine
     postSolution (S.Solution Nothing userSolution self) game
     newGame <- loopForRound round game
-    let lastRound = head $ filter (\round -> (fromJust $ roundNr round) == ((maxRoundNr newGame)-1)) $ rounds newGame
-    case (roundScore lastRound) of
-        Nothing -> putStrLn $ "Oh it's a tie!"
-        Just (Score.Score _ points player) -> if (player == self)
-                                                   then putStrLn $ "You won! You scored " ++ (show points) ++ " points."
-                                                   else putStrLn $ "I'm sorry, you lost. Your teammate scored " ++ (show points) ++ " points."
+    let lastRound = head $ filter (\round -> fromJust (roundNr round) == (maxRoundNr newGame -1)) $ rounds newGame
+    case roundScore lastRound of
+        Nothing -> putStrLn "Oh it's a tie!"
+        Just (Score.Score _ points player) -> if player == self
+                                                   then putStrLn $ "You won! You scored " ++ show points ++ " points."
+                                                   else putStrLn $ "I'm sorry, you lost. Your teammate scored " ++ show points ++ " points."
     putStrLn $ "Your total score is now " ++ myTotalScore self newGame
     putStrLn $ "The totalscore of you teammate is now " ++ teammateTotalScore self newGame
-    if (status newGame == False)
+    if not (status newGame)
         then 
             playRound self newGame
         else do
@@ -117,11 +117,11 @@ playRound self game = do
 loopForRound :: Round -> Game -> IO Game
 loopForRound lastRound game = do 
     newGame <- getGameWithNewRound lastRound game
-    if (isNothing newGame)
-        then do 
-            threadDelay 1000000
-            loopForRound lastRound game
-        else return $ fromJust newGame
+    maybe
+        (do threadDelay 1000000
+            loopForRound lastRound game)
+        return
+        newGame
  
 scoreRound :: Round -> String
 scoreRound round = 
@@ -129,14 +129,14 @@ scoreRound round =
     
 myTotalScore :: Player -> Game -> String
 myTotalScore self game = 
-    show $ foldl (+) 0 wonScores
+    show $ sum wonScores
      where 
         roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
-        wonScores = map (\round -> if ((Score.player $ fromJust $ roundScore round) == self) then Score.score $ fromJust $ roundScore round else 0) $ roundWithScore
+        wonScores = map (\round -> if Score.player (fromJust $ roundScore round) == self then Score.score $ fromJust $ roundScore round else 0) roundWithScore
 
 teammateTotalScore :: Player -> Game -> String
 teammateTotalScore self game = 
-    show $ foldl (+) 0 wonScores
+    show $ sum wonScores
     where 
         roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
-        wonScores = map (\round -> if ((Score.player $ fromJust $ roundScore round) /= self) then Score.score $ fromJust $ roundScore round else 0) $ roundWithScore
+        wonScores = map (\round -> if Score.player (fromJust $ roundScore round) /= self then Score.score $ fromJust $ roundScore round else 0) roundWithScore

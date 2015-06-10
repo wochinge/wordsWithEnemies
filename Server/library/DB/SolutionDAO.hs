@@ -34,12 +34,12 @@ instance FromRow SolutionDAO where
 parseSolution :: SolutionDAO -- ^ database row
               -> P.Player    -- ^ player of the solution
               -> S.Solution  -- ^ pretty solution object
-parseSolution solution player = S.Solution (Just $ solutionId solution) (solutionText solution) player
+parseSolution solution = S.Solution (Just $ solutionId solution) (solutionText solution)
 
 -- | Create solution table.
 createTables :: SQL.Connection -- ^ database connection
              -> IO ()          -- ^ nothing
-createTables conn = do
+createTables conn =
     createTable conn "solution" $
         T.concat [ "CREATE TABLE solution ("
                  , "solution_id INTEGER PRIMARY KEY, "
@@ -54,7 +54,7 @@ createTables conn = do
 getSolutions :: DatabaseId                      -- ^ database id of the round
              -> Handler App Sqlite [S.Solution] -- ^ 0 to 2 solutions
 getSolutions roundId = do
-    results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only (roundId))
+    results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only roundId)
     player <- mapM (\dao -> PlayerDb.getPlayer $ playerOfSolution dao) results
     return $ zipWith parseSolution results $ map fromJust player
 

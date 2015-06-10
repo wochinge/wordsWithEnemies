@@ -42,22 +42,21 @@ readWords = do
 -- | Filters the words, because word version with "'" are not wanted.
 filteredWords :: [String] -- ^ unfiltered word list
               -> [String] -- ^ filtered word list
-filteredWords words = filter (\a -> not $ "'" `L.isInfixOf` a) words
+filteredWords = filter (\a -> not $ "'" `L.isInfixOf` a)
     
 -- | Inserts a word in the database.
 insertWord :: S.Connection -- ^ database connection
            -> String       -- ^ word to insert
            -> IO ()        -- ^ nothing
-insertWord conn word = do
-    S.execute conn "INSERT INTO dictionary (word) VALUES (?)" (Only (word))
+insertWord conn word = S.execute conn "INSERT INTO dictionary (word) VALUES (?)" (Only word)
 
 -- | Checks if a given word is valid by looking whether the word is in the given word list.
 -- | The check is not case sensitive!
 wordExists :: String -- ^ word to check
            -> Handler App Sqlite Bool -- ^ True if word is in dictionary, Else if not
 wordExists word = do
-    result <- query "SELECT 1 FROM dictionary WHERE word = ? LIMIT 1" (Only (lowerCaseWord)) :: Handler App Sqlite [Only (Int)]
-    return $ (length result) > 0
+    result <- query "SELECT 1 FROM dictionary WHERE word = ? LIMIT 1" (Only lowerCaseWord) :: Handler App Sqlite [Only Int]
+    return $ not (null result)
     where
         lowerCaseWord = T.unpack $ T.toLower $ T.pack word
 
@@ -65,5 +64,5 @@ wordExists word = do
 -- | The word must have a length of >=5, so that there are enough letters to build new words.
 getRandomWord :: Handler App Sqlite String -- ^ random word
 getRandomWord = do
-    [Only (result)] <- query_ "SELECT word FROM dictionary WHERE LENGTH(word) >= 5 ORDER BY RANDOM() LIMIT 1"
+    [Only result] <- query_ "SELECT word FROM dictionary WHERE LENGTH(word) >= 5 ORDER BY RANDOM() LIMIT 1"
     return result
