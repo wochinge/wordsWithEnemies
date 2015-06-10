@@ -30,6 +30,7 @@ createTables conn = do
       mapM_ (insertWord conn) $ filteredWords words
     S.execute_ conn "COMMIT"
     S.execute_ conn "PRAGMA journal_mode=WAL"
+    S.execute_ conn "PRAGMA wal_autocheckpoint=50"
 
 
 -- | Reads the words from a text file.

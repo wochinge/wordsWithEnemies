@@ -7,6 +7,7 @@ module DB.RoundDAO
 , getRounds
 , insertRound
 , getRound
+, existsNewRound
 ) where
 
 import qualified Database.SQLite.Simple as SQL
@@ -90,3 +91,11 @@ insertRound gameId newRound = do
     mapM_ (\s -> insertSolution roundId s) $ R.solutions newRound
     let roundScore = R.roundScore newRound
     DF.forM_ roundScore (insertScore roundId)
+    
+-- | Checks for whether a new round exists.
+existsNewRound :: DatabaseId              -- ^ database id of the game of the round
+               -> Integer                 -- ^ nr of the old round
+               -> Handler App Sqlite Bool -- ^ True if new round exists, else False
+existsNewRound gameId oldRoundNr = do
+    result <- query "SELECT 1 FROM round WHERE game_id = ? AND round_nr > ? LIMIT 1" (gameId, oldRoundNr) :: Handler App Sqlite [Only Integer]
+    return $ length result > 0

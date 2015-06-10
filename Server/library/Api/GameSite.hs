@@ -17,7 +17,7 @@ import           Data.List (delete, permutations)
 import           DB.GameDAO (getGame, insertGame, updateGameStatus)
 import           DB.Dictionary (wordExists, getRandomWord)
 import           DB.ScoreDAO (insertScore)
-import           DB.RoundDAO (insertRound, getRound)
+import           DB.RoundDAO (insertRound, getRound, existsNewRound)
 import           DB.SolutionDAO (insertSolution, getSolutions)
 import           DB.PlayerDAO (dropFromQueue)
 import           Control.Monad.Trans
@@ -55,11 +55,13 @@ retrieveGame = do
 retrieveNewRound :: Handler App GameApp () -- ^ nothing
 retrieveNewRound = do
     requestedGameId <- getIdParam "id"
-    game <- withTop gameDAO $ getGame requestedGameId
-    when (isJust game) $ do
-        oldRoundNr <- getIdParam "oldRoundNr"
-        let newRound = filter (\r -> fromJust (roundNr r) > oldRoundNr) $ rounds $ fromJust game
-        when (newRound /= []) $ setBody game
+    oldRoundNr <- getIdParam "oldRoundNr"
+    
+    newRound <- withTop roundDAO $ existsNewRound requestedGameId oldRoundNr
+
+    when (newRound) $ do
+        game <- withTop gameDAO $ getGame requestedGameId
+        setBody game
     setStatusCode 200
 
 -- | Inserts a user solution in the database.
