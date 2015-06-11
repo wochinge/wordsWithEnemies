@@ -5,9 +5,12 @@
 module Types.Player where
 
 import 			 Data.Aeson.TH
+import 			 Control.Applicative
 
-data Player = Player { playerId :: Maybe Integer -- ID kann auch leer sein
+-- | Data type to represent a player.
+data Player = Player { playerId :: Maybe Integer
                      , name :: String
                      } deriving (Show, Eq)
 
+-- | Player can be converted to and from a JSON.          
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Player)

@@ -8,10 +8,12 @@ import 			 Data.Aeson.TH
 import 			 Types.Player
 import 			 Types.Round
 
-data Game = Game { gameId :: Maybe Integer -- ID kann auch leer sein
+-- | Data type to represent a game.
+data Game = Game { gameId :: Maybe Integer
                  , player :: [Player]
                  , status :: Bool
                  , rounds :: [Round]
                  } deriving (Show, Eq)
-    
+
+-- | Game can be converted to and from a JSON.                 
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Game)
