@@ -13,22 +13,21 @@ import 			 Snap.Core
 import 			 Snap.Snaplet
 import           Application
 import           Api.GameApp
-import           Data.List (delete, permutations)
 import           DB.GameDAO (getGame, insertGame, updateGameStatus)
 import           DB.Dictionary (wordExists, getRandomWord)
 import           DB.ScoreDAO (insertScore)
 import           DB.RoundDAO (insertRound, getRound, existsNewRound)
 import           DB.SolutionDAO (insertSolution, getSolutions)
 import           DB.PlayerDAO (dropFromQueue)
-import           Control.Monad.Trans
-import           Control.Monad
+import           Control.Monad.Trans (liftIO)
+import           Control.Monad (when)
 import           Data.Maybe (fromJust, isJust)
-import           System.Random (getStdGen, randomR)
 import           Types.Game
 import           Types.Score
 import           Types.Solution
 import           Types.Round
 import qualified Data.Foldable as F
+import           Utils.TextUtil (shuffleString, deleteFromText, wordToLower)
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App GameApp ())]   -- ^ route, handler for this route and http call
@@ -98,8 +97,9 @@ createSolution = do
 doesSolutionFitLetters :: Solution -> Round -> Bool
 doesSolutionFitLetters (Solution _ solutionText _) playedRound =
     null cleanSolution
-    where 
-        cleanSolution = deleteFromText challengeText solutionText
+    where
+        solutionAsLower = wordToLower solutionText
+        cleanSolution = deleteFromText challengeText solutionAsLower
         challengeText = letters playedRound
 
 -- | Calculates the score and saves it in the db.
@@ -115,14 +115,6 @@ saveScore playedRoundId (Solution _  letters1 player1) (Solution _ letters2 play
         letters1L = length letters1
         letters2L = length letters2
 
--- | Deletes all letters from the challenge word in the solution word. 
-deleteFromText :: String -- ^ challenge word
-               -> String -- ^ solution word
-               -> String -- ^ hopefully empty word
-deleteFromText _ [] = []
-deleteFromText [] text = text
-deleteFromText (x:xs) text = deleteFromText xs $ delete x text 
-
 -- | Creates a game with two waiting players and a first round.       
 createGame :: [Player]                 -- ^ two waiting players
            -> Handler App GameApp () -- ^ nothing
@@ -131,34 +123,19 @@ createGame players = do
     insertedGame <- withTop gameDAO $ insertGame game
     withTop playerDAO $ dropFromQueue players
     createRound $ fromJust $ gameId insertedGame
-    liftIO $ print insertedGame
 
 -- | Creates a new round.
 createRound :: Integer                -- ^ databaseId of the game
             -> Handler App GameApp () -- ^ nothing
 createRound gameIdOfRound = do
     challengeLetters <- withTop dictionary getRandomWord
-    random <- shuffle challengeLetters
+    random <- liftIO $ shuffleString challengeLetters
     let newRound = Round Nothing Nothing random Nothing []
     withTop roundDAO $ insertRound gameIdOfRound newRound
 
--- | Shuffles a string randomly.
-shuffle :: String                     -- ^ input string
-        -> Handler App GameApp String -- ^ shuffled string
-shuffle xs = do
-    gen <- liftIO getStdGen
-    let (permNum, _) = randomR (1, fac (length xs) -1) gen
-    return $ permutations xs !! permNum
-
--- | Faculty method to calculate the possible permutations.
-fac :: (Enum a, Num a) 
-    => a -- ^ number
-    -> a -- ^ faculty of the number.
-fac n = product [n, n-1 .. 1]
-
 -- | Detects whether the game is finished (= 5 rounds played).
 lastRoundPlayed :: Game -- ^ gameId
-                -> Bool    -- ^ True if lastRound is played, false if more round have to be played
+                -> Bool -- ^ True if lastRound is played, false if more round have to be played
 lastRoundPlayed game =
     length (rounds game) == 5
 

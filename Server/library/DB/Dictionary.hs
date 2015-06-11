@@ -3,16 +3,21 @@
 
 -- | Module, which offers functions to access a dictionary with the most
 -- | common english words. 
-module DB.Dictionary (createTables, wordExists, getRandomWord) where
+module DB.Dictionary 
+( createTables
+, wordExists
+, getRandomWord
+) where
 
 import           Control.Monad
 import qualified Database.SQLite.Simple as S
 import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
-import qualified Data.Text as T
+import qualified Data.Text as T (concat)
 import           Application
 import           DB.Utils
 import qualified Data.List as L
+import           Utils.TextUtil (wordToLower)
 
 -- | Creates the dictionary table and fills it with the words from the text file.
 createTables :: S.Connection -- ^ database connection
@@ -38,7 +43,7 @@ readWords :: IO [String] -- ^ list of words (words are lowercase, for a later no
 readWords = do
     words <- readFile "wordlist.txt"
     let wordList = lines words
-    return $ map (T.unpack . T.toLower . T.pack) wordList
+    return $ map wordToLower wordList
 
 -- | Filters the words, because word version with "'" are not wanted.
 filteredWords :: [String] -- ^ unfiltered word list
@@ -59,7 +64,7 @@ wordExists word = do
     result <- query "SELECT 1 FROM dictionary WHERE word = ? LIMIT 1" (Only lowerCaseWord) :: Handler App Sqlite [Only Int]
     return $ not (null result)
     where
-        lowerCaseWord = T.unpack $ T.toLower $ T.pack word
+        lowerCaseWord = wordToLower word
 
 -- | Returns a random word out of the dictionary.
 -- | The word must have a length of >=5, so that there are enough letters to build new words.

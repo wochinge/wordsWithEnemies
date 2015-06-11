@@ -3,19 +3,17 @@
 -- | Snaplet, which offers API functions to deal with players.
 module Api.PlayerSite (apiInit) where
 
-import 			 Snap.PrettySnap
+import 			 Snap.PrettySnap (setStatusCode, setBody, getIdParam)
 import qualified Data.ByteString.Char8 as B
 import 			 Snap.Core
 import 			 Snap.Snaplet
-import 			 DB.PlayerDAO
+import 			 DB.PlayerDAO (savePlayer)
 import 			 Api.PlayerApp
-import 			 Data.Maybe
 import 			 Application
-import           DB.GameDAO
-import           Control.Monad.Trans
-import           Control.Monad
+import           DB.GameDAO (createGame, getGameWithPlayer)
+import           Control.Monad (when)
 import           Api.GameSite (createGame)
-import qualified Data.Foldable as F
+import qualified Data.Foldable as F (mapM_)
 
 -- | Defines, which handler is used for which http call and route.
 routes :: [(B.ByteString, Handler App PlayerApp ())]   -- ^ route, handler for this route and http call
@@ -44,8 +42,6 @@ createPlayer = do
 getStatus :: Handler App PlayerApp () -- ^ nothing
 getStatus = do
     userId <- getIdParam "id"
-    liftIO $ print userId
     game <- withTop gameDAO $ getGameWithPlayer userId
-    liftIO $ print game
     F.mapM_ setBody game
     setStatusCode 200
