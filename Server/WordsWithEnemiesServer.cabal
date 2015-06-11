@@ -39,7 +39,8 @@ library
                             Snap.PrettySnap, 
                             Types.Player, Types.Game, Types.Round, Types.Score, Types.Solution,
                             DB.PlayerDAO, DB.Utils, DB.Dictionary, DB.GameDAO,
-                            DB.SolutionDAO, DB.ScoreDAO, DB.RoundDAO
+                            DB.SolutionDAO, DB.ScoreDAO, DB.RoundDAO,
+                            Utils.MathUtil, Utils.TextUtil
     build-depends:
         base,
         monads-tf,
