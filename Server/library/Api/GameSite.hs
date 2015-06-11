@@ -58,7 +58,7 @@ retrieveNewRound = do
     
     newRound <- withTop roundDAO $ existsNewRound requestedGameId oldRoundNr
 
-    when (newRound) $ do
+    when newRound $ do
         game <- withTop gameDAO $ getGame requestedGameId
         setBody game
     setStatusCode 200

@@ -17,14 +17,14 @@ import           DB.SolutionDAO
 import           Snap.Snaplet.SqliteSimple
 import           Snap.Snaplet
 import           Application
-import qualified Data.Text as T
+import qualified Data.Text as T (concat)
 import           DB.Utils
 import           Control.Monad
 import           Control.Applicative
 import           Types.Score
 import qualified Types.Round as R
 import           Types.Solution
-import qualified Data.Foldable as DF
+import qualified Data.Foldable as F
 
 -- | Represents a database row of the table round.
 data RoundDAO = RoundDAO { roundid :: DatabaseId
@@ -72,7 +72,7 @@ getRound roundId = do
         _ -> return Nothing
     
 -- | Builds one single round out of a the database row.
-buildRound :: RoundDAO        -- ^ dao which represents a row in the db
+buildRound :: RoundDAO                   -- ^ dao which represents a row in the db
            -> Handler App Sqlite R.Round -- ^ normal round object
 buildRound dao = do
     roundScore <- getScore $ roundid dao
@@ -88,9 +88,9 @@ insertRound gameId newRound = do
     execute "INSERT INTO round (round_nr, game_id, letters) VALUES ((SELECT IFNULL(MAX(round_nr), 0) + 1 FROM round WHERE game_id = ?), ?, ?)" values
     inserted <- query "SELECT * FROM round WHERE round_nr = (SELECT MAX(round_nr) FROM round where game_id = ?)" (Only gameId)
     let roundId = roundid $ head inserted
-    mapM_ (\s -> insertSolution roundId s) $ R.solutions newRound
+    mapM_ (insertSolution roundId) $ R.solutions newRound
     let roundScore = R.roundScore newRound
-    DF.forM_ roundScore (insertScore roundId)
+    F.forM_ roundScore (insertScore roundId)
     
 -- | Checks for whether a new round exists.
 existsNewRound :: DatabaseId              -- ^ database id of the game of the round
@@ -98,4 +98,4 @@ existsNewRound :: DatabaseId              -- ^ database id of the game of the ro
                -> Handler App Sqlite Bool -- ^ True if new round exists, else False
 existsNewRound gameId oldRoundNr = do
     result <- query "SELECT 1 FROM round WHERE game_id = ? AND round_nr > ? LIMIT 1" (gameId, oldRoundNr) :: Handler App Sqlite [Only Integer]
-    return $ length result > 0
+    return $ not (null result)

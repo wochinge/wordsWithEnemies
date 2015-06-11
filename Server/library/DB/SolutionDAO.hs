@@ -55,7 +55,7 @@ getSolutions :: DatabaseId                      -- ^ database id of the round
              -> Handler App Sqlite [S.Solution] -- ^ 0 to 2 solutions
 getSolutions roundId = do
     results <- query "SELECT * FROM solution WHERE round_id = ? LIMIT 2" (Only roundId)
-    player <- mapM (\dao -> PlayerDb.getPlayer $ playerOfSolution dao) results
+    player <- mapM (PlayerDb.getPlayer . playerOfSolution) results
     return $ zipWith parseSolution results $ map fromJust player
 
 -- | Inserts a solution in the database.

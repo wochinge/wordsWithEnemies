@@ -13,8 +13,11 @@ import qualified Database.SQLite.Simple as S
 import           Snap.Snaplet.SqliteSimple
 import           Data.Text
 
+-- | Name of a table.
 type Table           = String
+-- | SQL-Statement.
 type CreateStatement = Text
+-- | Type for ids in databases.
 type DatabaseId      = Integer
 
 -- | Checks whether a tables already exists in the database.

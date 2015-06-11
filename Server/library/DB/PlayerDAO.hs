@@ -72,4 +72,4 @@ getTwoWaitingPlayers = do
 
 dropFromQueue :: [Player] -> Handler App Sqlite ()
 dropFromQueue =
-    mapM_ (\p -> execute "DELETE FROM queue WHERE waiting_player = ?" (Only (playerId p)))
+    mapM_ (execute "DELETE FROM queue WHERE waiting_player = ?" . Only . playerId)

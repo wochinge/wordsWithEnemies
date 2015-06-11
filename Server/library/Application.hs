@@ -12,6 +12,7 @@ import           Api.PlayerApp
 import			 Api.GameApp
 import           Snap.Snaplet.SqliteSimple
 
+-- | Holds the snaplets.
 data App = App { _playerSnaplet :: Snaplet PlayerApp
 			   , _gameSnaplet :: Snaplet GameApp
                , _playerDAO :: Snaplet Sqlite
@@ -21,7 +22,8 @@ data App = App { _playerSnaplet :: Snaplet PlayerApp
                , _scoreDAO :: Snaplet Sqlite
                , _solutionDAO :: Snaplet Sqlite
                }
-
+               
+-- | Creates the snaplet.
 makeLenses ''App
 
 -- | Provides a HasSqlite instance for this module.

@@ -55,19 +55,17 @@ createTables conn =
                  , "FOREIGN KEY(player2_id) REFERENCES player(player_id))"
                  ]
                  
--- | Returns the game searched for by id               
+-- | Returns the game searched for by id.        
 getGame :: DatabaseId                    -- ^ database id of the game
              -> Handler App Sqlite (Maybe G.Game)
 getGame gameId = do
-    results <- query "SELECT * FROM game WHERE game_id = ? LIMIT 2" (Only gameId)
-    let game = head results
-    if null results
-        then
-            return Nothing
-        else Just <$> buildGame game
+    results <- query "SELECT * FROM game WHERE game_id = ? LIMIT 1" (Only gameId)
+    case results of 
+        [] -> return Nothing
+        [game] -> Just <$> buildGame game
 
- -- | Builds one single game out of a the database row.
-buildGame :: GameDAO        -- ^ dao which represents a row in the db
+-- | Builds one single game out of a the database row.
+buildGame :: GameDAO                    -- ^ dao which represents a row in the db
            -> Handler App Sqlite G.Game -- ^ normal game object
 buildGame dao = do
     Just player1 <- PlayerDb.getPlayer $ player1id dao

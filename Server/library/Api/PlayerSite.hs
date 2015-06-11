@@ -3,14 +3,14 @@
 -- | Snaplet, which offers API functions to deal with players.
 module Api.PlayerSite (apiInit) where
 
-import 			 Snap.PrettySnap (setStatusCode, setBody, getIdParam)
+import 			 Snap.PrettySnap (setStatusCode, setBody, getIdParam, getJSONBody)
 import qualified Data.ByteString.Char8 as B
 import 			 Snap.Core
 import 			 Snap.Snaplet
-import 			 DB.PlayerDAO (savePlayer)
+import 			 DB.PlayerDAO (savePlayer, getTwoWaitingPlayers)
 import 			 Api.PlayerApp
 import 			 Application
-import           DB.GameDAO (createGame, getGameWithPlayer)
+import           DB.GameDAO (getGameWithPlayer)
 import           Control.Monad (when)
 import           Api.GameSite (createGame)
 import qualified Data.Foldable as F (mapM_)
