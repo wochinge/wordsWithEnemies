@@ -13,8 +13,8 @@ import			 Api.GameApp
 import           Snap.Snaplet.SqliteSimple
 
 -- | Holds the snaplets.
-data App = App { _playerSnaplet :: Snaplet PlayerApp
-			   , _gameSnaplet :: Snaplet GameApp
+data App = App { _playerSnaplet :: Snaplet PlayerApp -- ^ player api
+			   , _gameSnaplet :: Snaplet GameApp     -- ^ game api
                , _playerDAO :: Snaplet Sqlite
                , _dictionary :: Snaplet Sqlite
                , _gameDAO :: Snaplet Sqlite
