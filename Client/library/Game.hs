@@ -112,7 +112,8 @@ playRound self game = do
             playRound self newGame
         else do
             putStrLn "This is the end of the game. Thanks for playing! Want to go again?"
-            play
+            putStrLn "[y]: I want to player again! \t [n]: Nah, let me see the menu"
+            getLine >>= handleEnd self
 
 loopForRound :: Round -> Game -> IO Game
 loopForRound lastRound game = do 
@@ -140,3 +141,10 @@ teammateTotalScore self game =
     where 
         roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
         wonScores = map (\round -> if Score.player (fromJust $ roundScore round) /= self then Score.score $ fromJust $ roundScore round else 0) roundWithScore
+
+handleEnd :: Player -> String -> IO ()
+handleEnd player continue 
+    | continue == "y" = do 
+        insertPlayerInWaitingQueue player
+        checkForGame player
+    | otherwise = play
