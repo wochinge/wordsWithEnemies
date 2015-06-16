@@ -12,6 +12,7 @@ import           Snap.Snaplet
 import           Api.PlayerApp
 import			 Api.GameApp
 import           Snap.Snaplet.SqliteSimple
+import           Control.Monad.State
 
 -- | Holds the snaplets.
 data App = App { _playerSnaplet :: Snaplet PlayerApp -- ^ player api

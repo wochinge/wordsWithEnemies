@@ -128,17 +128,18 @@ playRound self game = do
     putStrLn $ letters round
     userSolution <- getLine
     postSolution (S.Solution Nothing userSolution self) game
-    putStrLn "Oh, that solution looks great! Now let's wait for your oppenents solution!"
+    putStrLn "\nOh, that solution looks great! Now let's wait for your oppenents solution ..."
     newGame <- loopForRound round game
     let lastRound = head $ filter (\round -> fromJust (roundNr round) == (maxRoundNr newGame -1)) $ rounds newGame
+    putStr "\nResult: "
     case roundScore lastRound of
-        Nothing -> putStrLn "\nOh it's a tie! \n"
+        Nothing -> putStrLn "It's a tie! \n"
         Just (Score.Score _ points player) -> if player == self
-                                                   then putStrLn $ "\nYou won! You scored " ++ show points ++ " points. \n"
-                                                   else putStrLn $ "\nI'm sorry, you lost. Your teammate scored " ++ show points ++ " points. \n"
+                                                   then putStrLn $ "You won! You scored " ++ show points ++ " points. \n"
+                                                   else putStrLn $ "I'm sorry, you lost. Your teammate scored " ++ show points ++ " points. \n"
     let (myScore, otherScore) = myTotalScore self newGame
     putStrLn $ "Your total score: " ++ show myScore ++ " points"
-    putStrLn $ "Your teammate's score " ++ show otherScore ++ " points"
+    putStrLn $ "Your teammate's score: " ++ show otherScore ++ " points"
     if not (status newGame)
         then 
             playRound self newGame

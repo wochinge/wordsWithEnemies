@@ -39,7 +39,7 @@ library
         wreq  >= 0.3,
         containers,
         lens,
-        monads-tf
+        mtl
     if flag(documentation)
         build-depends: hscolour == 1.20.*
 
