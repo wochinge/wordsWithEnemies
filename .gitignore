@@ -23,6 +23,9 @@
 # HPC
 */.hpc/
 
+# Hspec
+**/*.tix
+
 # IntelliJ
 */*.iml
 */.idea/
