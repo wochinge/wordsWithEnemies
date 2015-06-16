@@ -29,8 +29,7 @@ play :: IO () -- ^ nothing
 play = do 
     hSetBuffering stdout NoBuffering
     putStrLn welcomeMessage
-    option <- getLine
-    handleOption option
+    getLine >>= handleOption 
 
 -- | Handles the users input on how to continue with the game.
 handleOption :: String -- ^ option
@@ -57,8 +56,7 @@ enterName :: IO () -- ^ nothing
 enterName = do
     hSetBuffering stdout NoBuffering
     putStrLn "\nPlease enter your nickname:"
-    nickname <- getLine
-    handleNickname nickname
+    getLine >>= handleNickname 
 
 -- | Handles the nickname of the user.
 -- | ensures that it's not null, then the player is send to the server.
