@@ -13,19 +13,19 @@ import qualified Types.Solution as S
 import qualified Types.Score as Score
 
 -- | Welcome Message for the User.
-welcomeMessage :: String
+welcomeMessage :: String -- ^ Message
 welcomeMessage = "\n\
                  \Welcome to Words with Enemies\n\n\
                  \Please choose one of the following options:\n\
                  \[s]: Start game \t [h]: Help \t [q]: Quit"
 
 -- | Waiting Message for the User.
-waitingMessage :: String
+waitingMessage :: String -- ^ Message
 waitingMessage = "\nSearching for a Teammate ..."
 
 -- | Starts the game and give the user several options.
 -- | Either to start playing, get help or quit the game.
-play :: IO ()
+play :: IO () -- ^ nothing
 play = do 
     hSetBuffering stdout NoBuffering
     putStrLn welcomeMessage
@@ -33,7 +33,8 @@ play = do
     handleOption option
 
 -- | Handles the users input on how to continue with the game.
-handleOption :: String -> IO ()
+handleOption :: String -- ^ option
+             -> IO ()  -- ^ nothing
 handleOption option
     | option == "q" = exitSuccess
     | option == "h" = help
@@ -41,7 +42,7 @@ handleOption option
     | otherwise = play
 
 -- | Prints out the rules of the game and then restarts the game.
-help :: IO ()
+help :: IO () -- ^ nothing
 help = do 
     putStrLn "\nHelp: \n\
     \5 Turns Each turn the two user are given random letters \n\
@@ -52,7 +53,7 @@ help = do
     play
 
 -- | Asks the user for the nickname he wants to use in the game.
-enterName :: IO ()
+enterName :: IO () -- ^ nothing
 enterName = do
     hSetBuffering stdout NoBuffering
     putStrLn "\nPlease enter your nickname:"
@@ -92,7 +93,7 @@ loopForGame player = do
         game
 
 -- |  Teammate Message.
-teammateMessage :: String
+teammateMessage :: String -- ^ Message
 teammateMessage = "\nYour Teammate is "
 
 -- | Starts the game and the first round.
@@ -105,13 +106,13 @@ startGame self game = do
     playRound self game
 
 -- | Tells the player what to do with the letters.
-lettersMessage :: String
+lettersMessage :: String -- ^ Message
 lettersMessage = "\nPlease form a word out of the following letters"
 
 -- | Finds the newest round of the game.
 maxRoundNr :: Game    -- ^ current game
            -> Integer -- ^ highest round number in the game
-maxRoundNr game = maximum $ map (\round -> fromJust $ roundNr round) $ rounds game
+maxRoundNr game = maximum $ map (fromJust . roundNr) $ rounds game
 
 -- | Starts a round.
 -- | prints the letters and gets the solution which is pushed to the server.
@@ -162,7 +163,7 @@ myTotalScore :: Player -- ^ current player
 myTotalScore self game = 
     show $ sum wonScores
      where 
-        roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
+        roundWithScore = filter (isJust . roundScore) $ rounds game
         wonScores = map (\round -> if Score.player (fromJust $ roundScore round) == self then Score.score $ fromJust $ roundScore round else 0) roundWithScore
 
 -- | Score of teammate.
@@ -172,7 +173,7 @@ teammateTotalScore :: Player -- ^ current player
 teammateTotalScore self game = 
     show $ sum wonScores
     where 
-        roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
+        roundWithScore = filter (isJust . roundScore) $ rounds game
         wonScores = map (\round -> if Score.player (fromJust $ roundScore round) /= self then Score.score $ fromJust $ roundScore round else 0) roundWithScore
 
 -- | Handles options at the end of the game.
