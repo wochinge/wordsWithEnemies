@@ -1,13 +1,14 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RecordWildCards   #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
 -- | Module, which defines and holds several sub snaplets.
 module Application where
 
 import           Control.Lens
-import           Snap.Snaplet
 import           Snap
+import           Snap.Snaplet
 import           Api.PlayerApp
 import			 Api.GameApp
 import           Snap.Snaplet.SqliteSimple

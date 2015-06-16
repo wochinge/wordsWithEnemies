@@ -45,16 +45,17 @@ library
         base,
         monads-tf,
         aeson,
-        snap,
+        snap == 0.13.3.2,
         blaze-builder,
-        snap-core, 
+        snap-core == 0.9.6.3, 
         lens,  
-        bytestring,
-        snaplet-sqlite-simple >= 0.4.8.2,
-        sqlite-simple >= 0.4.8.0,
+        bytestring >= 0.10.6.0,
+        snaplet-sqlite-simple == 0.4.8.2,
+        sqlite-simple >= 0.4.9.0,
         text,
         random,
         transformers
+        
     if flag(documentation)
         build-depends: hscolour == 1.23.*
 
