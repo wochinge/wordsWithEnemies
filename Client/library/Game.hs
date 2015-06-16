@@ -11,12 +11,12 @@ import           Types.Game
 import           Types.Round
 import qualified Types.Solution as S
 import qualified Types.Score as Score
+import qualified Data.List as L
 
 -- | Welcome Message for the User.
 welcomeMessage :: String -- ^ Message
-welcomeMessage = "\n\
-                 \Welcome to Words with Enemies\n\n\
-                 \Please choose one of the following options:\n\
+welcomeMessage = "\n\n\
+                 \Please choose one of the following options:\n\n\
                  \[s]: Start game \t [h]: Help \t [q]: Quit"
 
 -- | Waiting Message for the User.
@@ -28,6 +28,7 @@ waitingMessage = "\nSearching for a Teammate ..."
 play :: IO () -- ^ nothing
 play = do 
     hSetBuffering stdout NoBuffering
+    readFile "logo.txt" >>= putStrLn
     putStrLn welcomeMessage
     getLine >>= handleOption 
 
@@ -43,13 +44,15 @@ handleOption option
 -- | Prints out the rules of the game and then restarts the game.
 help :: IO () -- ^ nothing
 help = do 
-    putStrLn "\nHelp: \n\
-    \5 Turns Each turn the two user are given random letters \n\
-    \The two user must submit a dictionary checked word derived from these letters \n\
-    \The words are compared. The winner of the duel is determined by whoever has the most left over letters.\n\
-    \1 point is awarded for each left over letter.\
-    \At the end of 5 turns who ever gets the most points wins the game."
-    play
+    putStrLn "\nHelp: \n\n\
+    \A game consists of rounds. In each round you and your opponent get random letters.\
+    \It is your task to build a word out of these letters which is longer then the word of your opponent.\
+    \Be aware that your solution is checked with a dictionary so don't try to cheat! :-) \
+    \For each letter which your word is longer than your oppenent's you get one point.\
+    \At the end of 5 turns who ever gets the most points wins the game.\n\n\
+    \Okay? So what do you want to do now?"
+    putStrLn welcomeMessage
+    getLine >>= handleOption
 
 -- | Asks the user for the nickname he wants to use in the game.
 enterName :: IO () -- ^ nothing
@@ -125,6 +128,7 @@ playRound self game = do
     putStrLn $ letters round
     userSolution <- getLine
     postSolution (S.Solution Nothing userSolution self) game
+    putStrLn "Oh, that solution looks great! Now let's wait for your oppenents solution!"
     newGame <- loopForRound round game
     let lastRound = head $ filter (\round -> fromJust (roundNr round) == (maxRoundNr newGame -1)) $ rounds newGame
     case roundScore lastRound of
@@ -132,13 +136,14 @@ playRound self game = do
         Just (Score.Score _ points player) -> if player == self
                                                    then putStrLn $ "\nYou won! You scored " ++ show points ++ " points. \n"
                                                    else putStrLn $ "\nI'm sorry, you lost. Your teammate scored " ++ show points ++ " points. \n"
-    putStrLn $ "Your total score is now " ++ myTotalScore self newGame
-    putStrLn $ "The totalscore of you teammate is now " ++ teammateTotalScore self newGame
+    let (myScore, otherScore) = myTotalScore self newGame
+    putStrLn $ "Your total score: " ++ (show myScore) ++ " points"
+    putStrLn $ "Your teammate's score " ++ (show otherScore) ++ " points"
     if not (status newGame)
         then 
             playRound self newGame
         else do
-            putStrLn "\nThis is the end of the game. Thanks for playing! Want to go again?"
+            putStrLn "\nThis is the end of the game. Thanks for playing! Want to go again?\n"
             putStrLn "[y]: I want to player again! \t [n]: Nah, let me see the menu"
             getLine >>= handleEnd self
 
@@ -157,22 +162,13 @@ loopForRound lastRound game = do
 -- | Score of current player.
 myTotalScore :: Player -- ^ current player
              -> Game   -- ^ current game
-             -> String -- ^ score
-myTotalScore self game = 
-    show $ sum wonScores
-     where 
-        roundWithScore = filter (isJust . roundScore) $ rounds game
-        wonScores = map (\round -> if Score.player (fromJust $ roundScore round) == self then Score.score $ fromJust $ roundScore round else 0) roundWithScore
-
--- | Score of teammate.
-teammateTotalScore :: Player -- ^ current player
-                   -> Game   -- ^ current game
-                   -> String -- ^ score
-teammateTotalScore self game = 
-    show $ sum wonScores
-    where 
-        roundWithScore = filter (isJust . roundScore) $ rounds game
-        wonScores = map (\round -> if Score.player (fromJust $ roundScore round) /= self then Score.score $ fromJust $ roundScore round else 0) roundWithScore
+             -> (Int, Int) -- ^ (score of player, other score)
+myTotalScore self (Game _ _ _ rs) = 
+    let roundsWithScore = filter (isJust . roundScore) rs
+        scores = map (fromJust . roundScore) roundsWithScore
+        (myScores, otherScores) = L.partition (\s -> self == Score.player s) scores
+        foldScores toFold = foldl (\a s -> Score.score s + a) 0 toFold
+    in (foldScores myScores, foldScores otherScores)
 
 -- | Handles options at the end of the game.
 -- | Continue or end the game.
