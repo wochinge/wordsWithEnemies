@@ -14,13 +14,14 @@ import qualified Types.Score as Score
 
 -- | Welcome Message for the User.
 welcomeMessage :: String
-welcomeMessage = "Welcome to Words with Enemies\n\n \
+welcomeMessage = "\n\
+                 \Welcome to Words with Enemies\n\n\
                  \Please choose one of the following options:\n\
                  \[s]: Start game \t [h]: Help \t [q]: Quit"
 
 -- | Waiting Message for the User.
 waitingMessage :: String
-waitingMessage = "Searching for a Teammate ..."
+waitingMessage = "\nSearching for a Teammate ..."
 
 -- | Starts the game and give the user several options.
 -- | Either to start playing, get help or quit the game.
@@ -42,7 +43,7 @@ handleOption option
 -- | Prints out the rules of the game and then restarts the game.
 help :: IO ()
 help = do 
-    putStrLn "Help: \n\
+    putStrLn "\nHelp: \n\
     \5 Turns Each turn the two user are given random letters \n\
     \The two user must submit a dictionary checked word derived from these letters \n\
     \The words are compared. The winner of the duel is determined by whoever has the most left over letters.\n\
@@ -54,7 +55,7 @@ help = do
 enterName :: IO ()
 enterName = do
     hSetBuffering stdout NoBuffering
-    putStrLn "Please enter your nickname:"
+    putStrLn "\nPlease enter your nickname:"
     nickname <- getLine
     handleNickname nickname
 
@@ -65,11 +66,10 @@ handleNickname :: String -- ^ nickname
                -> IO ()  -- ^ nothing
 handleNickname name 
     | null name = do
-        putStrLn "Sorry, this is not a valid nickname!"
+        putStrLn "\nSorry, this is not a valid nickname!"
         enterName
     | otherwise = do
         player <- createPlayer name
-        print player
         checkForGame $ fromJust player
 
 -- | Searches for a Teammate then starts the game.
@@ -93,7 +93,7 @@ loopForGame player = do
 
 -- |  Teammate Message.
 teammateMessage :: String
-teammateMessage = "Your Teammate is "
+teammateMessage = "\nYour Teammate is "
 
 -- | Starts the game and the first round.
 startGame :: Player -- ^ current player
@@ -106,7 +106,7 @@ startGame self game = do
 
 -- | Tells the player what to do with the letters.
 lettersMessage :: String
-lettersMessage = "Please form a word out of the following letters"
+lettersMessage = "\nPlease form a word out of the following letters"
 
 -- | Finds the newest round of the game.
 maxRoundNr :: Game    -- ^ current game
@@ -129,17 +129,17 @@ playRound self game = do
     newGame <- loopForRound round game
     let lastRound = head $ filter (\round -> fromJust (roundNr round) == (maxRoundNr newGame -1)) $ rounds newGame
     case roundScore lastRound of
-        Nothing -> putStrLn "Oh it's a tie!"
+        Nothing -> putStrLn "\nOh it's a tie! \n"
         Just (Score.Score _ points player) -> if player == self
-                                                   then putStrLn $ "You won! You scored " ++ show points ++ " points."
-                                                   else putStrLn $ "I'm sorry, you lost. Your teammate scored " ++ show points ++ " points."
+                                                   then putStrLn $ "\nYou won! You scored " ++ show points ++ " points. \n"
+                                                   else putStrLn $ "\nI'm sorry, you lost. Your teammate scored " ++ show points ++ " points. \n"
     putStrLn $ "Your total score is now " ++ myTotalScore self newGame
     putStrLn $ "The totalscore of you teammate is now " ++ teammateTotalScore self newGame
     if not (status newGame)
         then 
             playRound self newGame
         else do
-            putStrLn "This is the end of the game. Thanks for playing! Want to go again?"
+            putStrLn "\nThis is the end of the game. Thanks for playing! Want to go again?"
             putStrLn "[y]: I want to player again! \t [n]: Nah, let me see the menu"
             getLine >>= handleEnd self
 
