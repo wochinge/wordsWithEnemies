@@ -12,14 +12,18 @@ import           Types.Round
 import qualified Types.Solution as S
 import qualified Types.Score as Score
 
+-- | Welcome Message for the User.
 welcomeMessage :: String
 welcomeMessage = "Welcome to Words with Enemies\n\n \
                  \Please choose one of the following options:\n\
                  \[s]: Start game \t [h]: Help \t [q]: Quit"
 
+-- | Waiting Message for the User.
 waitingMessage :: String
 waitingMessage = "Searching for a Teammate ..."
 
+-- | Starts the game and give the user several options.
+-- | Either to start playing, get help or quit the game.
 play :: IO ()
 play = do 
     hSetBuffering stdout NoBuffering
@@ -27,13 +31,15 @@ play = do
     option <- getLine
     handleOption option
 
+-- | Handles the users input on how to continue with the game.
 handleOption :: String -> IO ()
 handleOption option
     | option == "q" = exitSuccess
     | option == "h" = help
     | option == "s" = enterName
     | otherwise = play
-                
+
+-- | Prints out the rules of the game and then restarts the game.
 help :: IO ()
 help = do 
     putStrLn "Help: \n\
@@ -44,6 +50,7 @@ help = do
     \At the end of 5 turns who ever gets the most points wins the game."
     play
 
+-- | Asks the user for the nickname he wants to use in the game.
 enterName :: IO ()
 enterName = do
     hSetBuffering stdout NoBuffering
@@ -51,7 +58,11 @@ enterName = do
     nickname <- getLine
     handleNickname nickname
 
-handleNickname :: String -> IO ()
+-- | Handles the nickname of the user.
+-- | ensures that it's not null, then the player is send to the server.
+-- | Then see if there is another person to play with.
+handleNickname :: String -- ^ nickname
+               -> IO ()  -- ^ nothing
 handleNickname name 
     | null name = do
         putStrLn "Sorry, this is not a valid nickname!"
@@ -61,13 +72,17 @@ handleNickname name
         print player
         checkForGame $ fromJust player
 
-checkForGame :: Player -> IO ()
+-- | Searches for a Teammate then starts the game.
+checkForGame :: Player -- ^ player who's looking for a teammate
+             -> IO ()  -- ^ nothing
 checkForGame player = do
     putStrLn waitingMessage
     game <- loopForGame player
     startGame player game
 
-loopForGame :: Player -> IO Game
+-- | Search for a Teammate.
+loopForGame :: Player   -- ^ player who's looking for a teammate
+            -> IO Game  -- ^ game with to players
 loopForGame player = do 
     game <- getStatus player
     maybe
@@ -75,23 +90,36 @@ loopForGame player = do
             loopForGame player)
         return
         game
- 
+
+-- |  Teammate Message.
 teammateMessage :: String
 teammateMessage = "Your Teammate is "
-    
-startGame :: Player -> Game -> IO ()
+
+-- | Starts the game and the first round.
+startGame :: Player -- ^ current player
+          -> Game   -- ^ game to play
+          -> IO ()  -- ^ nothing
 startGame self game = do
     let teammate = name $ head $ filter (/= self) (player game)
     putStrLn $ teammateMessage ++ teammate
     playRound self game
 
+-- | Tells the player what to do with the letters.
 lettersMessage :: String
 lettersMessage = "Please form a word out of the following letters"
 
-maxRoundNr :: Game -> Integer
+-- | Finds the newest round of the game.
+maxRoundNr :: Game    -- ^ current game
+           -> Integer -- ^ highest round number in the game
 maxRoundNr game = maximum $ map (\round -> fromJust $ roundNr round) $ rounds game
 
-playRound :: Player -> Game -> IO ()
+-- | Starts a round.
+-- | prints the letters and gets the solution which is pushed to the server.
+-- | If both players typed in their solution, the server sends the outcome of the round.
+-- | If the last round is played the game is ended.
+playRound :: Player -- ^ current player
+          -> Game   -- ^ current game
+          -> IO ()  -- ^ nothing
 playRound self game = do
     let round = head $ filter (\round -> fromJust (roundNr round) == maxRoundNr game) $ rounds game
     putStrLn lettersMessage
@@ -115,7 +143,10 @@ playRound self game = do
             putStrLn "[y]: I want to player again! \t [n]: Nah, let me see the menu"
             getLine >>= handleEnd self
 
-loopForRound :: Round -> Game -> IO Game
+-- | Looks if there are both solutions, the outcome and a new round.
+loopForRound :: Round   -- ^ last round
+             -> Game    -- ^ current game
+             -> IO Game -- ^ game with new round
 loopForRound lastRound game = do 
     newGame <- getGameWithNewRound lastRound game
     maybe
@@ -123,26 +154,32 @@ loopForRound lastRound game = do
             loopForRound lastRound game)
         return
         newGame
- 
-scoreRound :: Round -> String
-scoreRound round = 
-    show $ Score.score $ fromJust $ roundScore round
-    
-myTotalScore :: Player -> Game -> String
+
+-- | Score of current player.
+myTotalScore :: Player -- ^ current player
+             -> Game   -- ^ current game
+             -> String -- ^ score
 myTotalScore self game = 
     show $ sum wonScores
      where 
         roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
         wonScores = map (\round -> if Score.player (fromJust $ roundScore round) == self then Score.score $ fromJust $ roundScore round else 0) roundWithScore
 
-teammateTotalScore :: Player -> Game -> String
+-- | Score of teammate.
+teammateTotalScore :: Player -- ^ current player
+                   -> Game   -- ^ current game
+                   -> String -- ^ score
 teammateTotalScore self game = 
     show $ sum wonScores
     where 
         roundWithScore = filter (\round -> isJust $ roundScore round) $ rounds game
         wonScores = map (\round -> if Score.player (fromJust $ roundScore round) /= self then Score.score $ fromJust $ roundScore round else 0) roundWithScore
 
-handleEnd :: Player -> String -> IO ()
+-- | Handles options at the end of the game.
+-- | Continue or end the game.
+handleEnd :: Player -- ^ current player
+          -> String -- ^ option of the player
+          -> IO ()  -- ^ nothing
 handleEnd player continue 
     | continue == "y" = do 
         insertPlayerInWaitingQueue player
