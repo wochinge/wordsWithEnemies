@@ -14,7 +14,8 @@ createPlayer name = post' (server ++ "player") player
 	where player = Player Nothing name
 
 -- | Sends the player to the servers waiting list.
-insertPlayerInWaitingQueue :: Player -> IO ()
+insertPlayerInWaitingQueue :: Player -- ^ current player
+                           -> IO ()  -- ^ nothing
 insertPlayerInWaitingQueue p@(Player (Just id) name) = do
     _ <- post' (server ++ "player/" ++ idAsString ++ "/newGame") p
     return ()
