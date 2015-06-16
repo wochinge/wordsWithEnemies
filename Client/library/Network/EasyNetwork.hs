@@ -14,7 +14,7 @@ import Data.Aeson
 import Control.Lens
 
 server :: String 
-server = "http://j207319.servers.jiffybox.net:9000/"
+server = "http://localhost:9000/"
 
 -- | Operation for a http-put. Normally used for updating objects.
 put' :: ToJSON a

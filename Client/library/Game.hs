@@ -137,8 +137,8 @@ playRound self game = do
                                                    then putStrLn $ "\nYou won! You scored " ++ show points ++ " points. \n"
                                                    else putStrLn $ "\nI'm sorry, you lost. Your teammate scored " ++ show points ++ " points. \n"
     let (myScore, otherScore) = myTotalScore self newGame
-    putStrLn $ "Your total score: " ++ (show myScore) ++ " points"
-    putStrLn $ "Your teammate's score " ++ (show otherScore) ++ " points"
+    putStrLn $ "Your total score: " ++ show myScore ++ " points"
+    putStrLn $ "Your teammate's score " ++ show otherScore ++ " points"
     if not (status newGame)
         then 
             playRound self newGame
@@ -167,7 +167,7 @@ myTotalScore self (Game _ _ _ rs) =
     let roundsWithScore = filter (isJust . roundScore) rs
         scores = map (fromJust . roundScore) roundsWithScore
         (myScores, otherScores) = L.partition (\s -> self == Score.player s) scores
-        foldScores toFold = foldl (\a s -> Score.score s + a) 0 toFold
+        foldScores = foldl (\a s -> Score.score s + a) 0
     in (foldScores myScores, foldScores otherScores)
 
 -- | Handles options at the end of the game.
