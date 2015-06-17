@@ -130,6 +130,14 @@ playRound self game = do
     postSolution (S.Solution Nothing userSolution self) game
     putStrLn "\nOh, that solution looks great! Now let's wait for your oppenents solution ..."
     newGame <- loopForRound round game
+    printOutcome newGame self
+    checkGameStatus newGame self
+
+-- | Prints the outcome of the round.
+printOutcome :: Game   -- ^ game with new round
+             -> Player -- ^ current player
+             -> IO ()  -- ^ nothing
+printOutcome newGame self = do  
     let lastRound = head $ filter (\round -> fromJust (roundNr round) == (maxRoundNr newGame -1)) $ rounds newGame
     putStr "\nResult: "
     case roundScore lastRound of
@@ -137,9 +145,15 @@ playRound self game = do
         Just (Score.Score _ points player) -> if player == self
                                                    then putStrLn $ "You won! You scored " ++ show points ++ " points. \n"
                                                    else putStrLn $ "I'm sorry, you lost. Your teammate scored " ++ show points ++ " points. \n"
-    let (myScore, otherScore) = myTotalScore self newGame
+    let (myScore, otherScore) = totalScores self newGame
     putStrLn $ "Your total score: " ++ show myScore ++ " points"
     putStrLn $ "Your teammate's score: " ++ show otherScore ++ " points"
+
+-- | Checks if this round was the last round of the game.
+checkGameStatus :: Game   -- ^ game with new round
+                -> Player -- ^ current player
+                -> IO ()  -- ^ nothing
+checkGameStatus newGame self = do
     if not (status newGame)
         then 
             playRound self newGame
@@ -161,10 +175,10 @@ loopForRound lastRound game = do
         newGame
 
 -- | Score of current player.
-myTotalScore :: Player -- ^ current player
+totalScores :: Player -- ^ current player
              -> Game   -- ^ current game
              -> (Int, Int) -- ^ (score of player, other score)
-myTotalScore self (Game _ _ _ rs) = 
+totalScores self (Game _ _ _ rs) = 
     let roundsWithScore = filter (isJust . roundScore) rs
         scores = map (fromJust . roundScore) roundsWithScore
         (myScores, otherScores) = L.partition (\s -> self == Score.player s) scores
