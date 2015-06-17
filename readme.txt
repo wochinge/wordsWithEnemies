@@ -7,6 +7,11 @@
 * Um den Server zu starten:  
  `cabal run -- -p <port>`
 
+## Known issues
+
+* *Response timeouts im Client nach Abschicken der Lösung zu einem Wort*
+    * Liegt vermutlich an lange laufenden SQL-Statements (obwohl diese einfach und kurz sein sollten)
+
 ## Lösungsmöglichkeiten bei Fehlern
 
 * *Unknown symbols* oder Problem mit *x86_x64 architecture*:  
