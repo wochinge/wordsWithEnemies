@@ -153,7 +153,7 @@ printOutcome newGame self = do
 checkGameStatus :: Game   -- ^ game with new round
                 -> Player -- ^ current player
                 -> IO ()  -- ^ nothing
-checkGameStatus newGame self = do
+checkGameStatus newGame self =
     if not (status newGame)
         then 
             playRound self newGame
