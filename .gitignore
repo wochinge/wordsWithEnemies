@@ -5,6 +5,9 @@
 # Cabal-Files
 */dist/
 
+# Stack-Files
+*/.stack-work
+
 # Snap-Files
 /Server/log
 

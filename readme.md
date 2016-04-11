@@ -5,16 +5,8 @@
 ## How to use
 
 * Um den Server zu starten:  
- `cabal run -- -p <port>`
+ `stack exec server -- -p <port>`
 
 ## Known issues
 
 * *Response timeouts im Client nach Abschicken der Lösung zu einem Wort*
-
-## Lösungsmöglichkeiten bei Build-Fehlern
-
-* *Unknown symbols* oder Problem mit *x86_x64 architecture*:  
-    * Alle .hs aus library auch in exposed modules aufführen
-* `cabal install` funktioniert nicht und Fehlermeldung alà *backjump limit reached*
-    * `cabal install --max-backjumps=-1`
-    * https://github.com/snapframework/snap-core/issues/195
