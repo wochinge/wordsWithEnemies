@@ -2,8 +2,8 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module, which offers functions to access a dictionary with the most
--- | common english words. 
-module DB.Dictionary 
+-- | common english words.
+module DB.Dictionary
 ( createTables
 , wordExists
 , getRandomWord
@@ -49,7 +49,7 @@ readWords = do
 filteredWords :: [String] -- ^ unfiltered word list
               -> [String] -- ^ filtered word list
 filteredWords = filter (\a -> not $ "'" `L.isInfixOf` a)
-    
+
 -- | Inserts a word in the database.
 insertWord :: S.Connection -- ^ database connection
            -> String       -- ^ word to insert

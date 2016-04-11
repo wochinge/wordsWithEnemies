@@ -1,16 +1,16 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 -- | Snaplet, which offers API functions to deal with games.
-module Api.GameSite 
+module Api.GameSite
 ( apiInit
 , createGame
 ) where
 
-import 			 Snap.PrettySnap (setStatusCode, setBody, getJSONBody, getIdParam)
+import           Snap.PrettySnap (setStatusCode, setBody, getJSONBody, getIdParam)
 import qualified Data.ByteString.Char8 as B
-import 			 Types.Player
-import 			 Snap.Core
-import 			 Snap.Snaplet
+import           Types.Player
+import           Snap.Core
+import           Snap.Snaplet
 import           Application
 import           Api.GameApp
 import           DB.GameDAO (getGame, insertGame, updateGameStatus)
@@ -35,8 +35,8 @@ routes = [ (":id", method GET retrieveGame)
          , (":id/round/:roundId/solution", method POST createSolution)
          , (":id/round/newRound/:oldRoundNr/", method GET retrieveNewRound)
          ]
-         
--- | Initializes the snaplet.         
+
+-- | Initializes the snaplet.
 apiInit :: SnapletInit App GameApp -- ^ Snaplet initializer
 apiInit = makeSnaplet "game api" "handles games" Nothing $ do
     addRoutes routes
@@ -49,13 +49,13 @@ retrieveGame = do
     game <- withTop gameDAO $ getGame requestedGameId
     F.mapM_ setBody game
     setStatusCode 200
-    
+
 -- | Returns Game with new Round if new Round
 retrieveNewRound :: Handler App GameApp () -- ^ nothing
 retrieveNewRound = do
     requestedGameId <- getIdParam "id"
     oldRoundNr <- getIdParam "oldRoundNr"
-    
+
     newRound <- withTop roundDAO $ existsNewRound requestedGameId oldRoundNr
 
     when newRound $ do
@@ -73,7 +73,6 @@ createSolution = do
 
     playerSolution <- getJSONBody
     setStatusCode 201
-
     solutionExists <- withTop dictionary $ wordExists $ solution playerSolution
     let solutionFitsLetters = doesSolutionFitLetters playerSolution solvedRound
 
@@ -85,11 +84,11 @@ createSolution = do
 
     roundSolutions <- withTop solutionDAO $ getSolutions solvedRoundId
     when (length roundSolutions == 2) $ do
-        saveScore solvedRoundId (head roundSolutions) (last roundSolutions)
-        currentGameId <- getIdParam "id"
-        Just game <- withTop gameDAO $ getGame currentGameId
-        when (lastRoundPlayed game) $ withTop gameDAO $ updateGameStatus currentGameId True
-        createRound currentGameId
+      saveScore solvedRoundId (head roundSolutions) (last roundSolutions)
+      currentGameId <- getIdParam "id"
+      Just game <- withTop gameDAO $ getGame currentGameId
+      when (lastRoundPlayed game) $ withTop gameDAO $ updateGameStatus currentGameId True
+      createRound currentGameId
 
 -- | Checks whether the solution is made out of the letters of the challenge.
 -- | E.g. "house" is a valid word, but cannot be build out of the the letters of "slat" (salt).
@@ -115,7 +114,7 @@ saveScore playedRoundId (Solution _  letters1 player1) (Solution _ letters2 play
         letters1L = length letters1
         letters2L = length letters2
 
--- | Creates a game with two waiting players and a first round.       
+-- | Creates a game with two waiting players and a first round.
 createGame :: [Player]                 -- ^ two waiting players
            -> Handler App GameApp () -- ^ nothing
 createGame players = do
@@ -138,4 +137,3 @@ lastRoundPlayed :: Game -- ^ gameId
                 -> Bool -- ^ True if lastRound is played, false if more round have to be played
 lastRoundPlayed game =
     length (rounds game) == 5
-

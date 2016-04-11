@@ -54,6 +54,7 @@ library
         sqlite-simple >= 0.4.9.0,
         text,
         random,
+        random-fu >= 0.2.6.2,
         transformers
 
     if flag(documentation)
