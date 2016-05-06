@@ -56,7 +56,6 @@ library
         random,
         random-fu >= 0.2.6.2,
         transformers
-
     if flag(documentation)
         build-depends: hscolour == 1.23.*
 

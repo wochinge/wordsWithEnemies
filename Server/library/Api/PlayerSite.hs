@@ -21,14 +21,14 @@ routes = [ (""           , method POST createPlayer)
          , (":id/status" , method GET  getStatus)
          , (":id/newGame", method POST newGame)
          ]
-         
--- | Initializes the snaplet.         
+
+-- | Initializes the snaplet.
 apiInit :: SnapletInit App PlayerApp -- ^ Snaplet initializer
 apiInit = makeSnaplet "playerApi" "handles users" Nothing $ do
     addRoutes routes
     return PlayerApp
 
--- | Handler, which takes care of creating players.   
+-- | Handler, which takes care of creating players.
 createPlayer :: Handler App PlayerApp () -- ^ nothing
 createPlayer = do
     player <- getJSONBody
@@ -43,14 +43,14 @@ newGame = do
     userId <- getIdParam "id"
     withTop playerDAO $ insertWaitingPlayer userId
     checkQueue
-    
+
 -- | Checks the queue for two waiting players and creates a new game when possible.
 checkQueue :: Handler App PlayerApp () -- ^ nothing
 checkQueue = do
     waitingPlayers <- withTop playerDAO getTwoWaitingPlayers
     when (length waitingPlayers > 1) $
         withTop gameSnaplet $ createGame waitingPlayers
-      
+
 -- | Handler, which provides information for a player whether a opponent was found.
 getStatus :: Handler App PlayerApp () -- ^ nothing
 getStatus = do

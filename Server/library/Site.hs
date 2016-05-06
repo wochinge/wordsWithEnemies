@@ -18,6 +18,7 @@ import qualified DB.ScoreDAO as Sc_DAO
 import qualified DB.SolutionDAO as Sol_DAO
 import           Control.Lens
 import           Control.Concurrent
+import           Snap.Core
 
 -- | Initializes the main application by initializing the sub snaplets.
 -- | It also establishes the db connection.
@@ -31,7 +32,7 @@ initApplication = makeSnaplet "wordsWithEnemies" "Web api for Words with Enemies
     roundSnap <- nestSnaplet "roundDAO" roundDAO sqliteInit
     solutionSnap <- nestSnaplet "solutionDAO" solutionDAO sqliteInit
     scoreSnap <- nestSnaplet "scoreDAO" scoreDAO sqliteInit
-    
+    wrapSite (\site -> (modifyResponse $ addHeader "Access-Control-Allow-Origin" "*") >> site)
     let c = sqliteConn $ playerSnap ^# snapletValue
     liftIO $ withMVar c $ \conn -> P_DAO.createTables conn
     liftIO $ withMVar c $ \conn -> Dict.createTables conn

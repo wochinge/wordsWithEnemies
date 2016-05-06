@@ -10,13 +10,13 @@ import           Control.Lens
 import           Snap
 import           Snap.Snaplet
 import           Api.PlayerApp
-import			 Api.GameApp
+import           Api.GameApp
 import           Snap.Snaplet.SqliteSimple
 import           Control.Monad.State
 
 -- | Holds the snaplets.
 data App = App { _playerSnaplet :: Snaplet PlayerApp -- ^ player api
-			   , _gameSnaplet :: Snaplet GameApp     -- ^ game api
+               , _gameSnaplet :: Snaplet GameApp     -- ^ game api
                , _playerDAO :: Snaplet Sqlite
                , _dictionary :: Snaplet Sqlite
                , _gameDAO :: Snaplet Sqlite
@@ -24,7 +24,7 @@ data App = App { _playerSnaplet :: Snaplet PlayerApp -- ^ player api
                , _scoreDAO :: Snaplet Sqlite
                , _solutionDAO :: Snaplet Sqlite
                }
-               
+
 -- | Creates the snaplet.
 makeLenses ''App
 
