@@ -4,9 +4,9 @@
 -- | Module for the model game.
 module Types.Game where
 
-import 			 Data.Aeson.TH
-import 			 Types.Player
-import 			 Types.Round
+import        Data.Aeson.TH
+import        Types.Player
+import        Types.Round
 
 -- | Data type to represent a game.
 data Game = Game { gameId :: Maybe Integer
@@ -15,5 +15,5 @@ data Game = Game { gameId :: Maybe Integer
                  , rounds :: [Round]
                  } deriving (Show, Eq)
 
--- | Game can be converted to and from a JSON.                 
+-- | Game can be converted to and from a JSON.
 $(deriveJSON defaultOptions{omitNothingFields = True} ''Game)

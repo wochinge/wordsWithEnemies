@@ -2,7 +2,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module for database operations for Score objects.
-module DB.ScoreDAO 
+module DB.ScoreDAO
 ( createTables
 , getScore
 , insertScore
@@ -17,7 +17,7 @@ import           Snap.Snaplet
 import           Application
 import qualified Data.Text as T
 import           DB.Utils
-import 			 Control.Applicative
+import           Control.Applicative
 import           Data.Maybe
 
 -- | Represents one row of the table score.
@@ -50,12 +50,12 @@ createTables conn =
                  , "FOREIGN KEY(round_id) REFERENCES round(round_id))"
                  ]
 
--- | Returns score of a round out of the database.                 
+-- | Returns score of a round out of the database.
 getScore :: DatabaseId                       -- ^ id of the round
          -> Handler App Sqlite (Maybe S.Score) -- ^ Score of the round or nothing
 getScore roundId = do
     results <- query "SELECT * FROM roundscore WHERE round_id = ? LIMIT 1" (Only roundId)
-    case results of 
+    case results of
         [] -> return Nothing
         [score] -> do
             player <- PlayerDb.getPlayer $ winnerid score

@@ -16,7 +16,7 @@ import           Snap.Snaplet
 import           Application
 import qualified Data.Text as T
 import           DB.Utils
-import 			 Control.Applicative
+import           Control.Applicative
 import qualified Types.Solution as S
 import           Data.Maybe
 
@@ -30,7 +30,7 @@ data SolutionDAO = SolutionDAO { solutionId :: DatabaseId
 instance FromRow SolutionDAO where
   fromRow = SolutionDAO <$> field <*> field <*> field <*> field
 
--- | Parses one database row to a nice solution model.  
+-- | Parses one database row to a nice solution model.
 parseSolution :: SolutionDAO -- ^ database row
               -> P.Player    -- ^ player of the solution
               -> S.Solution  -- ^ pretty solution object
@@ -43,14 +43,14 @@ createTables conn =
     createTable conn "solution" $
         T.concat [ "CREATE TABLE solution ("
                  , "solution_id INTEGER PRIMARY KEY, "
-                 , "solution TEXT ," 
+                 , "solution TEXT ,"
                  , "player_id INTEGER NOT NULL, "
                  , "round_id INTEGER NOT NULL, "
                  , "FOREIGN KEY(round_id) REFERENCES round(round_id), "
                  , "FOREIGN KEY(player_id) REFERENCES player(player_id))"
                  ]
 
--- | Returns solutions of round.                 
+-- | Returns solutions of round.
 getSolutions :: DatabaseId                      -- ^ database id of the round
              -> Handler App Sqlite [S.Solution] -- ^ 0 to 2 solutions
 getSolutions roundId = do

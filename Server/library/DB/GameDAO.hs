@@ -2,15 +2,15 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 -- | Module, which provides database operations for Games.
-module DB.GameDAO 
-( DB.GameDAO.createTables 
+module DB.GameDAO
+( DB.GameDAO.createTables
 , insertGame
 , getGame
 , getGameWithPlayer
 , updateGameStatus
 ) where
 
-import 			 Control.Applicative
+import           Control.Applicative
 import qualified Database.SQLite.Simple as SQL
 import           Snap.Snaplet
 import           Snap.Snaplet.SqliteSimple
@@ -33,7 +33,7 @@ data GameDAO = GameDAO { gameid    :: DatabaseId
 
 instance FromRow GameDAO where
   fromRow = GameDAO <$> field <*> field <*> field <*> field
-  
+
 -- | Parses one game row to a nice game model.
 parseGame :: GameDAO    -- ^ database row
           -> [P.Player] -- ^ players of the game
@@ -54,13 +54,13 @@ createTables conn =
                  , "FOREIGN KEY(player1_id) REFERENCES player(player_id), "
                  , "FOREIGN KEY(player2_id) REFERENCES player(player_id))"
                  ]
-                 
--- | Returns the game searched for by id.        
+
+-- | Returns the game searched for by id.
 getGame :: DatabaseId                    -- ^ database id of the game
              -> Handler App Sqlite (Maybe G.Game)
 getGame gameId = do
     results <- query "SELECT * FROM game WHERE game_id = ? LIMIT 1" (Only gameId)
-    case results of 
+    case results of
         [] -> return Nothing
         [game] -> Just <$> buildGame game
 
@@ -79,15 +79,15 @@ getGameWithPlayer :: DatabaseId                        -- ^ Id of the player
 getGameWithPlayer playerId = do
     results <- query "SELECT * FROM game WHERE (player1_id = ? OR player2_id = ?) AND status = ?" (playerId, playerId, False)
     if null results
-        then 
+        then
             return Nothing
         else do
-            rounds <- withTop roundDAO $ RoundDb.getRounds $ gameid $ head results 
+            rounds <- withTop roundDAO $ RoundDb.getRounds $ gameid $ head results
             case rounds of
                 [] -> return Nothing
                 _ -> getGame $ gameid $ head results
 
--- | Inserts a game into the datebase.                 
+-- | Inserts a game into the datebase.
 insertGame :: G.Game                    -- ^ the game to insert
            -> Handler App Sqlite G.Game -- ^ inserted game including id
 insertGame game = do
